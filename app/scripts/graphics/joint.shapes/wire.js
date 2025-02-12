@@ -101,8 +101,8 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
           }
         }
       }
-
-      self.updateWireProperties(size);
+      self.setWireClass(size);
+      //self.updateWireProperties(size);
       self.updateBifurcations();
     }, 100);
   },
@@ -154,7 +154,11 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
     return this;
   },
 
-  updateWireProperties: function (size) {
+  /* Changed the way of updating wire, very most optimized by css calc
+   * instead constant dom update, but for the moment , recomend not delete
+   * the old function to have near if something go bad
+   */
+/*  updateWireProperties: function (size) {
     console.log('UpdateWireProperties');
     if (size > 1) {
       this.$('.connection').css('stroke-width', WIRE_WIDTH * 3);
@@ -169,6 +173,22 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
         WIRE_WIDTH * 2
       );
     }
+  },*/
+setWireClass: function (size) {
+    var connection = this.$('.connection');
+    connection.removeClass('wire-bus wire-single'); 
+
+    if (size > 1) {
+      connection.addClass('wire-bus');
+    } else {
+      connection.addClass('wire-single');
+    }
+  },
+
+  updateWireProperties: function (size) {
+
+    // In this moment Icestudio not need update any wire properties, is setup at the creation
+   // this.setWireClass(size);
   },
 
   updateConnection: function (opt) {
