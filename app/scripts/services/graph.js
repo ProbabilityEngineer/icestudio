@@ -504,7 +504,7 @@ angular.module('icestudio').service(
           newWidth + 'px'
         );
       }
-
+let panFrameRequested = false;
       this.panAndZoom = svgPanZoom(targetElement.childNodes[2], {
         fit: false,
         center: false,
@@ -543,7 +543,14 @@ angular.module('icestudio').service(
         onPan: function (newPan) {
           state.pan = newPan;
           graph.trigger('state', state);
-          updateCellBoxes();
+
+          if (!panFrameRequested) {
+      panFrameRequested = true;
+      requestAnimationFrame(() => {
+        updateCellBoxes();
+        panFrameRequested = false;
+      });
+    }
         },
       });
 
