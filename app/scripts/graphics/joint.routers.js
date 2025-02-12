@@ -1,4 +1,6 @@
-    function result(object, property, defaultValue) {
+'use strict';
+
+function result(object, property, defaultValue) {
   var value = object[property];
   if (typeof value === 'function') {
     return value.call(object);
@@ -9,7 +11,6 @@
 
 
 joint.routers.ice = (function (g, _, joint) {
-  'use strict';
 
   var config = {
     // size of the step to find a route
@@ -154,12 +155,8 @@ var blockRectangles = filteredElements.map(function(element) {
   return element.getBBox();
 });
 
-
-
-    var state = this.paper.options.getState();
  
 var x, y, origin, corner;
-
 
 blockRectangles.forEach(function(bbox) {
   bbox.moveAndExpand(opt.paddingBox);

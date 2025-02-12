@@ -11,20 +11,13 @@ joint.shapes.ice.Wire = joint.dia.Link.extend({
     '<path class="connection-wrap" d="M 0 0 0 0"/>',
     '<path class="marker-source" d="M 0 0 0 0"/>',
     '<path class="marker-target" d="M 0 0 0 0"/>',
-    '<g class="labels"/>',
     '<g class="marker-vertices"/>',
     '<g class="marker-bifurcations"/>',
     '<g class="marker-arrowheads"/>',
     '<g class="link-tools"/>',
   ].join(''),
 
-  labelMarkup: [
-    '<g class="label hidden">',
-    '<rect x="-8" y="-6" width="16" height="12" rx="2" ry="2" fill="white" stroke="#777"/>',
-    '<text fill="#555"/>',
-    '</g>',
-  ].join(''),
-
+  
   bifurcationMarkup: [
     '<g class="marker-bifurcation-group" transform="translate(<%= x %>, <%= y %>)">',
     '<circle class="marker-bifurcation" idx="<%= idx %>" r="<%= r %>" fill="#777"/>',
@@ -61,21 +54,7 @@ joint.shapes.ice.Wire = joint.dia.Link.extend({
     {
       type: 'ice.Wire',
 
-      labels: [
-        {
-          position: 0.5,
-          attrs: {
-            text: {
-              'text': '',
-              'y': '4px',
-              'font-weight': 'bold',
-              'font-size': '11px',
-              'text-anchor': 'middle',
-            },
-          },
-        },
-      ],
-
+   
       attrs: {
         '.connection': {
           'stroke-width': WIRE_WIDTH,
@@ -149,61 +128,6 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
     return this;
   },
 
-  renderLabels: function () {
-    if (!this._V.labels) {
-      return this;
-    }
-
-    this._labelCache = {};
-    var $labels = $(this._V.labels.node).empty();
-
-    var labels = this.model.get('labels') || [];
-    if (!labels.length) {
-      return this;
-    }
-
-    var labelTemplate = joint.util.template(
-      this.model.get('labelMarkup') || this.model.labelMarkup
-    );
-    // This is a prepared instance of a vectorized SVGDOM node for the label element resulting from
-    // compilation of the labelTemplate. The purpose is that all labels will just `clone()` this
-    // node to create a duplicate.
-    var labelNodeInstance = V(labelTemplate());
-
-    _.each(
-      labels,
-      function (label, idx) {
-        if (typeof idx === 'undefined' || idx === null || idx === false) {
-        }
-        var labelNode = labelNodeInstance.clone().node;
-        V(labelNode).attr('label-idx', idx);
-        this._labelCache[idx] = V(labelNode);
-
-        var $text = $(labelNode).find('text');
-        var textAttributes = _.extend(
-          { 'text-anchor': 'middle', 'font-size': 13 },
-          joint.util.getByPath(label, 'attrs/text', '/')
-        );
-
-        $text.attr(_.omit(textAttributes, 'text'));
-
-        if (label.attrs.text.text) {
-          $(labelNode).removeClass('hidden');
-        }
-
-        if (!_.isUndefined(textAttributes.text)) {
-          V($text[0]).text(textAttributes.text + '', {
-            annotations: textAttributes.annotations,
-          });
-        }
-        $labels.append(labelNode);
-      },
-      this
-    );
-
-    return this;
-  },
-
   updateToolsPosition: function () {
     if (!this._V.linkTools) {
       return this;
@@ -231,9 +155,9 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
   },
 
   updateWireProperties: function (size) {
+    console.log('UpdateWireProperties');
     if (size > 1) {
       this.$('.connection').css('stroke-width', WIRE_WIDTH * 3);
-      this.model.label(0, { attrs: { text: { text: size } } });
 
       this.model.bifurcationMarkup = this.model.bifurcationMarkup.replace(
         /<%= r %>/g,
@@ -251,7 +175,7 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
     opt = opt || {};
 
     // Necessary path finding
-    var route = (this.route = this.findRoute(
+   var route = (this.route = this.findRoute(
       this.model.get('vertices') || [],
       opt
     ));
@@ -269,7 +193,7 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
     this._translateAndAutoOrientArrows(
       this._V.markerSource,
       this._V.markerTarget
-    );
+    ); 
   },
 
   // cacheUpdateBifurcations:{},
