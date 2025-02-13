@@ -3,6 +3,7 @@
 Type: WIP
 
 App Changes:
+  - New custom fine tune route control points user capability algorithm by @cavearr
   - Embeding SDK version of nwjs in WIPs by @cavearr
   - Improving loading times by @cavearr
   - Refactoring graphics engine by @cavearr
