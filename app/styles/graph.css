@@ -1,0 +1,68 @@
+:root {
+
+  --wire-width:2px;
+  --ice-circuit-stroke-width: 1px;
+  --ice-circuit-port-width: 16px;
+  --ice-circuit-port-height: 16px;
+  --ice-circuit-stroke-width: 1px;
+  --ice-circuit-port-label-color: #777;
+  --ice-circuit-port-wire-color: #777;
+  --ice-circuit-port-connector-color: #777;
+  --ice-circuit-port-connector-width: 1px;
+  --ice-circuit-port-connector-bg: #FBFBC9;
+}
+
+.joint-type-ice-code,
+.joint-type-ice-memory,
+.joint-type-ice-constant,
+.joint-type-ice-generic,
+.joint-type-ice-output,
+.joint-type-ice-input{
+
+  .body{
+
+  width:1px;
+  height:1px;
+  stroke:none;
+}
+
+  .port-body {
+          opacity: 0;
+        }
+
+  .port-label {
+          fill: var(--ice-circuit-port-label-color);
+  }
+
+  .port-wire {
+          stroke:var(--ice-circuit-port-wire-color);
+          stroke-width:var(--wire-width); 
+        }
+  .port-default {
+          display: none;
+        }
+      .port-default rect {
+          width: var(--ice-circuit-port-width);
+          height: var(--ice-circuit-port-height);
+          stroke: var(--ice-circuit-port-connector-color);
+          stroke-width: var(--ice-circuit-port-connector-width);
+          fill: var(--ice-circuit-port-connector-bg);
+        }
+        .port-default path {
+          stroke: var(--ice-circuit-port-wire-color);
+          stroke-width: var(--wire-width);
+        }
+
+
+
+}/* .joint-type-ice-generic*/
+
+
+.wire-bus {
+  stroke-width: calc(var(--wire-width, 1) * 3); /* 3x el grosor */
+}
+
+.wire-single {
+  stroke-width: var(--wire-width, 1); /* Tamaño base */
+}
+

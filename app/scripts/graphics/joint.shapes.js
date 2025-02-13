@@ -1,10 +1,9 @@
 //-- jshint rules                             
 /* global placementCssIOTasks, placementCssTasks */
 
-
-
 'use strict';
 
+ 
 var os = require('os');
 var sha1 = require('sha1');
 var marked = require('marked');   // jshint unused:false
@@ -20,6 +19,8 @@ if (DARWIN) {
 }
 
 // Model element
+
+/* MOD  1 */
 
 joint.shapes.ice = {};
 joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
@@ -58,14 +59,8 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
         '.': {
           magnet: false,
         },
-        '.body': {
-          width: 1,
-          height: 1,
-          stroke: 'none',
-        },
-        '.port-body': {
-          r: 16,
-          opacity: 0,
+       '.port-body': {
+          r: 16
         },
         '.leftPorts .port-body': {
           pos: 'left',
@@ -87,31 +82,14 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
           type: 'output',
           magnet: true,
         },
-        '.port-label': {
-          fill: '#777',
-        },
-        '.port-wire': {
-          'stroke': '#777',
-          'stroke-width': WIRE_WIDTH,
-        },
-        '.port-default': {
-          display: 'none',
-        },
-        '.port-default rect': {
+       '.port-default rect': {
           'x': '-32',
           'y': '-8',
-          'width': '16',
-          'height': '16',
           'rx': '3',
-          'ry': '3',
-          'stroke': '#777',
-          'stroke-width': 1,
-          'fill': '#FBFBC9',
+          'ry': '3'
         },
         '.port-default path': {
-          'd': 'M 0 0 L -20 0',
-          'stroke': '#777',
-          'stroke-width': WIRE_WIDTH,
+          'd': 'M 0 0 L -20 0'
         },
       },
     },
@@ -130,7 +108,7 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
     joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
   },
 
-  updatePortsAttrs: function (/*eventName*/) {
+  updatePortsAttrs: function () { //args:events
     if (this._portSelectors) {
       var newAttrs = _.omit(this.get('attrs'), this._portSelectors);
       this.set('attrs', newAttrs, { silent: true });
@@ -462,7 +440,7 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
 
   updateBox: function () {},
 
-  removeBox: function (/*event*/) {
+  removeBox: function () { //event variable arg
     this.$box.remove();
   },
 
@@ -519,20 +497,20 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
 
   enter: false,
 
-  mouseovercard: function (event /*, x, y*/) {
+  mouseovercard: function (event ) { // Possible args: x  y
     if (event && event.which === 0) {
       // Mouse button not pressed
       this.showTooltip();
     }
   },
 
-  mouseoutcard: function (/*event, x, y*/) {
+  mouseoutcard: function () { // Possible args: event x y 
     this.hideTooltip();
   },
 
-  mouseupcard: function (/*event, x, y*/) {},
+  mouseupcard: function () {},// Possible args: event x y 
 
-  mousedowncard: function (/*event, x, y*/) {
+  mousedowncard: function () {// Possible args: event x y 
     this.hideTooltip();
   },
 
@@ -664,8 +642,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
         let ckey = '--';
 
    // Render ports width
-        // var pwires = this.$el[0].getElementsByClassName("port-wire");
-    /*    if (typeof this.pwires === 'undefined') {
+        if (typeof this.pwires === 'undefined') {
           this.pwires = this.$el[0].getElementsByClassName('port-wire');
         }
 
@@ -711,7 +688,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
               value: nwidth + 'px',
             });
           }
-        }*/
+        }
 
         // Render rules
         var portDefault, paths, rects, j;

@@ -397,7 +397,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     var paths, rects;
     var width = WIRE_WIDTH * state.zoom;
 
-/*var pwires = this.$el[0].getElementsByClassName('port-wire');
+var pwires = this.$el[0].getElementsByClassName('port-wire');
     for (i = 0; i < pwires.length; i++) {
       pendingTasks.push({
         e: pwires[i],
@@ -498,7 +498,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
           });
         }
       }
-    }*/
+    }
     //
     return this.place(data, bbox, state, pendingTasks);
   },
