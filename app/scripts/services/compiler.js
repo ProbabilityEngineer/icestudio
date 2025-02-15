@@ -1027,7 +1027,7 @@ angular
               code += value;
               code += '";\n';
 
-              code += 'IOBUF  PORT "';
+              code += 'IOBUF PORT "';
               code += utils.digestId(block.id);
               code += '[' + pin.index + ']" ';
 
@@ -1053,7 +1053,7 @@ angular
             code += value;
             code += '";\n';
 
-            code += 'IOBUF  PORT "';
+            code += 'IOBUF PORT "';
             code += utils.digestId(block.id);
             code += '" ';
 
