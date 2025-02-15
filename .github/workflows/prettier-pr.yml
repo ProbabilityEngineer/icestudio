@@ -33,7 +33,7 @@ jobs:
 
           # Intentar hacer commit
           git add .
-          if git commit -m "🚀 Auto-format code and linting check; then
+          if git commit -m "🚀 Auto-format code and linting check"; then
             echo "✅ Commit successful, pushing and continuing pipeline..."
             git push
           else
