@@ -11,6 +11,7 @@
 *.code-workspace
 *.swp
 *~
+*.failed
 .tmp
 .vscode
 dist

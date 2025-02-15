@@ -122,11 +122,25 @@ fi
 ## Cleanup temp files
 rm -f "$MODIFIED_FILES" 2>/dev/null || del "$MODIFIED_FILES" 2>/dev/null
 
+## Clean failed file flag if exists
+if [ -f "pre-commit.failed" ]; then
+    rm pre-commit.failed 2>/dev/null || del pre-commit.failed
+fi
+
 ## Step 4: Run JSHint, and if not passed break the commit 
 box_message "\n$YELLOW" "$WARNING_ICON" "Running linter check..."
 if ! npm run jshint --silent; then
     box_message "$RED" "$ERROR_ICON" "Linting failed! Fix issues before committing."
-    touch pre-commit.failed
+    if [ -n "$COMSPEC" ]; then
+        # Windows CMD
+        echo. > pre-commit.failed
+    elif [ -n "$PSModulePath" ]; then
+        # PowerShell
+        New-Item -Path "pre-commit.failed" -ItemType File -Force | Out-Null
+    else
+        # Linux/macOS/Git Bash
+        touch pre-commit.failed
+    fi
     exit 1
 fi
 
