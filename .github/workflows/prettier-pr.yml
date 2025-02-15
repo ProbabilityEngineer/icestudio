@@ -24,17 +24,22 @@ jobs:
       - name: Install Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Run Prettier and JSHint
-        run: |
-          npm run prettier
-          npm run jshint
-
       # If prettier or jshint fails, push or PR will be rejected
-      - name: Commit and Push Changes
+      - name: Commit and Push Changes with linting and auto-format
         if: success()
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Intentar hacer commit
           git add .
-          git commit -m "🚀 Auto-format code and linting check" || exit 0
-          git push
+          git commit -m "🚀 Auto-format code and linting check"
+          COMMIT_STATUS=$?
+
+          if [ $COMMIT_STATUS -eq 0 ]; then
+            echo "✅ Commit checks OK, continuing commiting"
+            git push
+          else
+            echo "❌ Commit with errors, aborting"
+            exit 1
+          fi
