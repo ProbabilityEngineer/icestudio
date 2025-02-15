@@ -1,12 +1,11 @@
-//-- jshint rules                             
+//-- jshint rules
 /* global placementCssIOTasks, placementCssTasks */
 
 'use strict';
 
- 
 var os = require('os');
 var sha1 = require('sha1');
-var marked = require('marked');   // jshint unused:false
+var marked = require('marked'); // jshint unused:false
 var openurl = require('openurl'); // jshint unused:false
 var domCache = {};
 const WIRE_WIDTH = 1.5;
@@ -59,8 +58,8 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
         '.': {
           magnet: false,
         },
-       '.port-body': {
-          r: 16
+        '.port-body': {
+          r: 16,
         },
         '.leftPorts .port-body': {
           pos: 'left',
@@ -82,14 +81,14 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
           type: 'output',
           magnet: true,
         },
-       '.port-default rect': {
-          'x': '-32',
-          'y': '-8',
-          'rx': '3',
-          'ry': '3'
+        '.port-default rect': {
+          x: '-32',
+          y: '-8',
+          rx: '3',
+          ry: '3',
         },
         '.port-default path': {
-          'd': 'M 0 0 L -20 0'
+          d: 'M 0 0 L -20 0',
         },
       },
     },
@@ -108,7 +107,8 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
     joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
   },
 
-  updatePortsAttrs: function () { //args:events
+  updatePortsAttrs: function () {
+    //args:events
     if (this._portSelectors) {
       var newAttrs = _.omit(this.get('attrs'), this._portSelectors);
       this.set('attrs', newAttrs, { silent: true });
@@ -440,7 +440,8 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
 
   updateBox: function () {},
 
-  removeBox: function () { //event variable arg
+  removeBox: function () {
+    //event variable arg
     this.$box.remove();
   },
 
@@ -497,20 +498,23 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
 
   enter: false,
 
-  mouseovercard: function (event ) { // Possible args: x  y
+  mouseovercard: function (event) {
+    // Possible args: x  y
     if (event && event.which === 0) {
       // Mouse button not pressed
       this.showTooltip();
     }
   },
 
-  mouseoutcard: function () { // Possible args: event x y 
+  mouseoutcard: function () {
+    // Possible args: event x y
     this.hideTooltip();
   },
 
-  mouseupcard: function () {},// Possible args: event x y 
+  mouseupcard: function () {}, // Possible args: event x y
 
-  mousedowncard: function () {// Possible args: event x y 
+  mousedowncard: function () {
+    // Possible args: event x y
     this.hideTooltip();
   },
 
@@ -632,16 +636,16 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
       //--
       let temporalBypass = true;
       let width = WIRE_WIDTH * state.zoom;
-      
+
       if (temporalBypass || this.initialized === false) {
         this.initialized = true;
-    const nwidth = width * 3;
+        const nwidth = width * 3;
         let tokId = 'port-wire-' + modelId + '-';
         let dome;
         this.cacheDome = {};
         let ckey = '--';
 
-   // Render ports width
+        // Render ports width
         if (typeof this.pwires === 'undefined') {
           this.pwires = this.$el[0].getElementsByClassName('port-wire');
         }
@@ -653,7 +657,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
             value: width + 'px',
           });
         }
-               for (i = 0; i < leftPorts.length; i++) {
+        for (i = 0; i < leftPorts.length; i++) {
           port = leftPorts[i];
           if (port.size > 1) {
             ckey = tokId + port.id;
@@ -760,4 +764,3 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
     return false;
   },
 });
-

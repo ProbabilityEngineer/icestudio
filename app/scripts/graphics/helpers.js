@@ -1,4 +1,3 @@
-
 'use strict';
 /* jshint unused:false */
 function placementCssIOTasks(data, bbox, state, queue) {
