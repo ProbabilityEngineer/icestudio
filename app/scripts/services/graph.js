@@ -1,5 +1,5 @@
 //== JSHINT rules / START
-// Gglobal isClickOnVertex
+/* global isClickOnVertex */
 //== JSHINT rules / END
 
 //----------------------------------------------------------------------------
@@ -31,7 +31,9 @@ angular.module('icestudio').service(
     window
   ) {
     let _this = this;
+
     let autorouting = false;
+
     let isRouting = false;
 
     let mousePosition = { x: 0, y: 0 };

@@ -1,6 +1,6 @@
 {
   "name": "icestudio",
-  "version": "0.13.3w",
+  "version": "0.13.4w",
   "description": "Visual editor for open FPGA boards",
   "contributors": [
     {
@@ -15,6 +15,7 @@
   "repository": "https://github.com/FPGAwars/icestudio",
   "license": "GPL-2.0",
   "scripts": {
+    "prepare": "npm run setupDevEnv",
     "start": "grunt serve",
     "buildLinux64": "grunt dist --platform=linux64",
     "buildAarch64": "grunt dist --platform=aarch64 ",
@@ -24,9 +25,12 @@
     "preptext": "grunt gettext && scripts/update_translations.sh",
     "compiletext": "grunt compiletext",
     "prettier": "prettier --write .",
+    "prettierBot": "prettier --write . 2>&1 | tee .git/tmp/prettier-modified.txt",
     "jshint": "grunt jshint",
+    "setupDevEnv": "grunt setupDevEnv",
     "clean": "grunt clean",
     "getcollection": "grunt getcollection",
+    "debugInfo": "grunt debugInfo",
     "postinstall": "sh scripts/postInstall.sh && grunt getcollection && npmpd && cd app && npm install"
   },
   "devDependencies": {
@@ -50,6 +54,10 @@
     "prettier": "^3.4.2"
   },
   "darwinDependencies": {
+    "fs-xattr": "^0.4.0",
+    "grunt-appdmg": "github:agoodney/grunt-appdmg"
+  },
+  "dependencies": {
     "fs-xattr": "^0.4.0",
     "grunt-appdmg": "github:agoodney/grunt-appdmg"
   }

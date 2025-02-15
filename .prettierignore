@@ -16,4 +16,4 @@
 
 # Bypass specific files and folders 
 package-lock.json
-Gruntfile.js
+#Gruntfile.js
