@@ -89,25 +89,28 @@ angular
         }
       };
 
-function isSortable(cell, sortType) {
-  const type = cell.get('type');
-  return (sortType === 'xy' && (type === 'ice.Constant' || type === 'ice.Memory')) ||
-         (sortType === 'y' && (type === 'ice.Input' || type === 'ice.Output'));
-}
+      function isSortable(cell, sortType) {
+        const type = cell.get('type');
+        return (
+          (sortType === 'xy' &&
+            (type === 'ice.Constant' || type === 'ice.Memory')) ||
+          (sortType === 'y' && (type === 'ice.Input' || type === 'ice.Output'))
+        );
+      }
 
-function getSortValue(cell, sortType) {
-  if (sortType === 'xy') {
-    return cell.get('position').x;
-  } else if (sortType === 'y') {
-    return cell.get('position').y;
-  }
-  return 0; // Si no es sortable por ninguna de las condiciones, retornamos un valor neutral
-}
+      function getSortValue(cell, sortType) {
+        if (sortType === 'xy') {
+          return cell.get('position').x;
+        } else if (sortType === 'y') {
+          return cell.get('position').y;
+        }
+        return 0; // Si no es sortable por ninguna de las condiciones, retornamos un valor neutral
+      }
 
       $scope.editModeToggle = function ($event) {
         var btn = $event.currentTarget;
 
-            iprof.clear();
+        iprof.clear();
         if (!$scope.isNavigating) {
           var block = graph.breadcrumbs[graph.breadcrumbs.length - 1];
           var tmp = false;
@@ -123,37 +126,36 @@ function getSortValue(cell, sortType) {
             subModuleActive = false;
             var cells = $scope.graph.getCells();
 
-cells.sort((a, b) => {
-  const isSortableAxy = isSortable(a, 'xy');
-  const isSortableBy = isSortable(b, 'y');
-  const isSortableA = isSortableAxy || isSortable(a, 'y');
-  const isSortableB = isSortable(b, 'xy') || isSortableBy;
+            cells.sort((a, b) => {
+              const isSortableAxy = isSortable(a, 'xy');
+              const isSortableBy = isSortable(b, 'y');
+              const isSortableA = isSortableAxy || isSortable(a, 'y');
+              const isSortableB = isSortable(b, 'xy') || isSortableBy;
 
-  if (!isSortableA && !isSortableB) {
-    return 0; // Ninguno es sortable
-  }
-  
-  if (isSortableA !== isSortableB) {
-    // Si uno es sortable y el otro no, el sortable va primero
-    // Aquí puedes decidir el orden de precedencia entre xy y y
-    return isSortableA ? -1 : 1;
-  }
+              if (!isSortableA && !isSortableB) {
+                return 0; // Ninguno es sortable
+              }
 
-  // Ambos son sortables, ahora comparamos basados en sus tipos y coordenadas
-  if (isSortableAxy && isSortableBy) {
-    // Si uno es de xy y el otro de y, priorizamos xy
-    return -1;
-  } else if (isSortableBy && isSortableAxy) {
-    return 1;
-  } else if (isSortableAxy) {
-    return getSortValue(a, 'xy') - getSortValue(b, 'xy');
-  } else {
-    return getSortValue(a, 'y') - getSortValue(b, 'y');
-  }
-});
+              if (isSortableA !== isSortableB) {
+                // Si uno es sortable y el otro no, el sortable va primero
+                // Aquí puedes decidir el orden de precedencia entre xy y y
+                return isSortableA ? -1 : 1;
+              }
 
-         
-/*
+              // Ambos son sortables, ahora comparamos basados en sus tipos y coordenadas
+              if (isSortableAxy && isSortableBy) {
+                // Si uno es de xy y el otro de y, priorizamos xy
+                return -1;
+              } else if (isSortableBy && isSortableAxy) {
+                return 1;
+              } else if (isSortableAxy) {
+                return getSortValue(a, 'xy') - getSortValue(b, 'xy');
+              } else {
+                return getSortValue(a, 'y') - getSortValue(b, 'y');
+              }
+            });
+
+            /*
          function isSortableConstMem(cell) {
   const type = cell.get('type');
   return type === 'ice.Constant' || type === 'ice.Memory';
@@ -187,10 +189,10 @@ cells.sort((a, b) => {
   }
   return 0;
 });
-        */ 
+        */
 
-   // Sort Constant/Memory cells by x-coordinate
-           /* OPT1-- cells = _.sortBy(cells, function (cell) {
+            // Sort Constant/Memory cells by x-coordinate
+            /* OPT1-- cells = _.sortBy(cells, function (cell) {
               if (
                 cell.get('type') === 'ice.Constant' ||
                 cell.get('type') === 'ice.Memory'
@@ -199,9 +201,8 @@ cells.sort((a, b) => {
               }
             });*/
 
-
-         // Sort I/O cells by y-coordinate
-         /*   OPT1-- cells = _.sortBy(cells, function (cell) {
+            // Sort I/O cells by y-coordinate
+            /*   OPT1-- cells = _.sortBy(cells, function (cell) {
               if (
               cell.get('type') === 'ice.Input' ||
               cell.get('type') === 'ice.Output'
@@ -246,18 +247,18 @@ cells.sort((a, b) => {
             subModuleActive = true;
           }
 
-            iprof.start('navigateProject');
+          iprof.start('navigateProject');
           $rootScope.$broadcast('navigateProject', {
             update: false,
             project: tmp,
             editMode: rw,
             fromDoubleClick: false,
           });
-            iprof.end('navigateProject');
-            iprof.start('safeApply');
+          iprof.end('navigateProject');
+          iprof.start('safeApply');
           utils.rootScopeSafeApply();
-            iprof.end('safeApply');
-            iprof.print();
+          iprof.end('safeApply');
+          iprof.print();
         }
       };
 
@@ -354,13 +355,13 @@ cells.sort((a, b) => {
             });
           });
         } else {
-        iprof.start('resetView');
+          iprof.start('resetView');
           graph.resetView();
-        iprof.end('resetView');
+          iprof.end('resetView');
 
-        iprof.start('loadDesign');
+          iprof.start('loadDesign');
           graph.loadDesign(args.project.design, opt, function () {
-        iprof.end('loadDesign');
+            iprof.end('loadDesign');
             utils.endBlockingTask();
           });
         }

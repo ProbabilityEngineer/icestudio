@@ -8,37 +8,35 @@
  * Future refactor: helper jointjs 
  --*/
 function isClickOnVertex(linkView, x, y, margin = 5) {
-
   const linkModel = linkView.model;
   const vertices = linkModel.get('vertices') || [];
-  return vertices.some(v => Math.abs(v.x - x) < margin && Math.abs(v.y - y) < margin);
+  return vertices.some(
+    (v) => Math.abs(v.x - x) < margin && Math.abs(v.y - y) < margin
+  );
 }
-
 
 /*--
  * Click filter to choose between click on path , vertex or remove marker isClickOnVertex
  --*/
 const originalPointerDown = joint.dia.LinkView.prototype.pointerdown;
-joint.dia.LinkView.prototype.pointerdown = function(evt, x, y) {
+joint.dia.LinkView.prototype.pointerdown = function (evt, x, y) {
+  // Delete marker icon -> default jointjs action
+  if (evt.target.closest('.marker-vertex-remove')) {
+    originalPointerDown.apply(this, arguments);
 
-    // Delete marker icon -> default jointjs action  
-    if (evt.target.closest('.marker-vertex-remove')) {
-        originalPointerDown.apply(this, arguments);
-    
-      // Vertex group area but no control point neither delete icon -> default jointjs action 
-     }else if (evt.target.closest('.marker-vertex-group')) {
-            
-        originalPointerDown.apply(this, arguments);
+    // Vertex group area but no control point neither delete icon -> default jointjs action
+  } else if (evt.target.closest('.marker-vertex-group')) {
+    originalPointerDown.apply(this, arguments);
 
     // Vertex control point -> jointjs management
-    }else if (isClickOnVertex(this, x, y, 10)) {
-        originalPointerDown.apply(this, arguments);
+  } else if (isClickOnVertex(this, x, y, 10)) {
+    originalPointerDown.apply(this, arguments);
 
     // Click on path -> stop default jointjs actions and derive to our route algorithm
-    } else {
-        evt.stopPropagation();
-        evt.preventDefault();
-    }
+  } else {
+    evt.stopPropagation();
+    evt.preventDefault();
+  }
 };
 
 /*--

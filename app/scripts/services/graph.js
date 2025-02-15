@@ -620,11 +620,13 @@ isOnZoom=true;
         }
       });
 /*--
- * The wire is divided into segments, we need to find the segment nearest at 
+ * The wire is divided into segments, we need to find the segment nearest at
  * the point that the user has clicked.
  --*/
 function getInsertIndex(vertices, newPoint, linkModel) {
-    if (vertices.length === 0) return 0;
+    if (vertices.length === 0) {
+        return 0;
+    }
 
     let minDistance = Infinity;
     let index = vertices.length; // Por defecto, al final
@@ -636,7 +638,7 @@ function getInsertIndex(vertices, newPoint, linkModel) {
     let targetPoint = target.id ? getElementCenter(target.id) : target;
 
     // Wire full path (route)
-    let pathPoints = [sourcePoint, ...vertices, targetPoint]; 
+    let pathPoints = [sourcePoint, ...vertices, targetPoint];
 
     for (let i = 0; i < pathPoints.length - 1; i++) {
         let v1 = pathPoints[i];
@@ -663,8 +665,8 @@ function pointToSegmentDistance(p, v1, v2) {
     let D = v2.y - v1.y;
 
     let dot = A * C + B * D;
-    let len_sq = C * C + D * D;
-    let param = len_sq !== 0 ? dot / len_sq : -1;
+    let lenSq = C * C + D * D;
+    let param = lenSq !== 0 ? dot / lenSq : -1;
 
     let xx, yy;
     if (param < 0) {
@@ -689,14 +691,16 @@ function pointToSegmentDistance(p, v1, v2) {
 --*/
 function getElementCenter(elementId) {
     let element = paper.getModelById(elementId);
-    if (!element) return { x: 0, y: 0 };
+    if (!element) {
+        return { x: 0, y: 0 };
+    }
 
     let bbox = element.getBBox();
     return { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
 }
 
       paper.on('cell:pointerclick', function (cellView, evt, x, y) {
-    
+
  if (cellView.model.isLink()) {
  const linkModel = cellView.model;
         let vertices = linkModel.get('vertices') || [];
@@ -705,13 +709,13 @@ function getElementCenter(elementId) {
         if (evt.target.closest('.marker-vertex-remove')) {
             return;
         }
-   // if user click is on grupo marker area, but not in path, control point or remove icon, jointjs do the stuff
+
+    // if user click is on grupo marker area, but not in path, control point or remove icon, jointjs do the stuff
     if (evt.target.closest('.marker-vertex-group')) {
         return;
     }
 
-        
-        // Obtain the coordsof the click  in the same world coordinates than jointjs
+        // Obtain the coords of the click in the same world coordinates as jointjs
         let localPoint = paper.pageToLocalPoint({ x: evt.clientX, y: evt.clientY });
 
         // If vertex is clicked jointjs do the stuff
@@ -854,9 +858,9 @@ function getElementCenter(elementId) {
 //-- the tooltip position under the line of the mark
 document.body.addEventListener('mouseenter', function(event) {
     if (
-      event.target.classList.contains('ace_gutter-cell') && 
-      (event.target.classList.contains('ace_error') || 
-       event.target.classList.contains('ace_info') || 
+      event.target.classList.contains('ace_gutter-cell') &&
+      (event.target.classList.contains('ace_error') ||
+       event.target.classList.contains('ace_info') ||
        event.target.classList.contains('warning'))
     ) {
       //-- Important to use parseFloat to remove px suffix from css
