@@ -37,12 +37,16 @@ jobs:
             echo "✅ Commit successful, pushing and continuing pipeline..."
             git push
           else
-            if git diff --cached --quiet; then
+            COMMIT_EXIT_CODE=$?
+            if [ $COMMIT_EXIT_CODE -eq 1 ]; then
                 echo "⚠️ No changes detected, continuing pipeline..."
                 exit 0
-            else
-                echo "❌ Checks failed, aborting pipeline."
+            elif [ $COMMIT_EXIT_CODE -eq 2 ]; then
+                echo "❌ Pre-commit hook failed (JSHint, Prettier, etc.), aborting pipeline."
                 exit 1
+            else
+                echo "❌ Unexpected git commit error (code: $COMMIT_EXIT_CODE), aborting pipeline."
+                exit $COMMIT_EXIT_CODE
             fi
           fi
 
