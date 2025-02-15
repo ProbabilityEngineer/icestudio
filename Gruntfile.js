@@ -771,6 +771,26 @@ module.exports = function (grunt) {
     });
   });
 
+  grunt.registerTask(
+    'preparePackageJson',
+    'Prepare package.json for commiting',
+    function () {
+      const { execSync } = require('child_process');
+
+      grunt.log.writeln('🛠  Prepare package.json for commit...');
+
+      const jsonCmd = 'npx json';
+
+      // Remove OSX dependencies
+      execSync(
+        `${jsonCmd} -I -f package.json -e "if (this.dependencies) { delete this.dependencies['fs-xattr']; delete this.dependencies['grunt-appdmg']; }" 2>/dev/null`
+      );
+
+      grunt.log.writeln('');
+      grunt.log.writeln('✅ package.json ready for commit.');
+    }
+  );
+
   //-----------------------------------------------------------------------
   //  PROJECT CONFIGURATION
   //  All the TASKs used are defined here

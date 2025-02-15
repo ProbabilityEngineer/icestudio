@@ -62,6 +62,15 @@ spin() {
   done
 }
 
+# Step 0: Clean and prepare commit, some OS include dependencias only for it and this 
+#         could be broken the others OSs build
+box_message "\n$YELLOW" "$WARNING_ICON" "Preparing package.json ..."
+if ! npm run preparePackageJson; then
+    box_message "$RED" "$ERROR_ICON" "Error working on package.json standarization"
+    exit 1
+fi
+
+
 ## Step 1: Run PrettierBot with Spinner
 box_message "$YELLOW" "$WARNING_ICON" "Reformatting code with Prettier..."
 npm run prettierBot > "$MODIFIED_FILES" &  # Run Prettier in the background
