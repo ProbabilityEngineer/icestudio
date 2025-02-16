@@ -63,20 +63,31 @@ spin() {
 }
 
 # Step 0: Clean and prepare commit, some OS include dependencies only for it and this 
-#         could break the build for other OSs
+#         could break the build for other OSs (this only affect to OSX)
+
 box_message "\n$YELLOW" "$WARNING_ICON" "Preparing package.json ..."
-if ! npm run preparePackageJson; then
-    box_message "$RED" "$ERROR_ICON" "Error working on package.json standardization"
-    exit 1
+if [ -n "$COMSPEC" ]; then
+        # Windows CMD
+        box_message "$GREEN" "$SUCCESS_ICON" "Nothing to do..."
+elif [ -n "$PSModulePath" ]; then
+        # PowerShell
+        box_message "$GREEN" "$SUCCESS_ICON" "Nothing to do..."
+else
+        # Linux/macOS/Git Bash
+        if ! npm run preparePackageJson; then
+          box_message "$RED" "$ERROR_ICON" "Error working on package.json standardization"
+          exit 1
+        fi
+
+        # Check if package.json was modified before adding it to the commit
+        if ! git diff --quiet package.json; then
+          git add package.json
+          box_message "$GREEN" "$SUCCESS_ICON" "package.json was modified and added to the commit."
+        else
+          box_message "$GRAY" "$INFO_ICON" "No changes detected in package.json. Skipping git add."
+        fi
 fi
 
-# Check if package.json was modified before adding it to the commit
-if ! git diff --quiet package.json; then
-    git add package.json
-    box_message "$GREEN" "$SUCCESS_ICON" "package.json was modified and added to the commit."
-else
-    box_message "$GRAY" "$INFO_ICON" "No changes detected in package.json. Skipping git add."
-fi
 
 ## Step 1: Run PrettierBot with Spinner
 box_message "$YELLOW" "$WARNING_ICON" "Reformatting code with Prettier..."
