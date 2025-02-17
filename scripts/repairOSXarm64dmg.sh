@@ -9,7 +9,7 @@ GREEN="\033[1;32m"
 #-- Start repairing
 APPDIR="dist/"
 if [ -d $APPDIR ]; then
-    # Iiterate over .dmg files in dist
+    # Iterate over .dmg files in dist
     for dmg in `ls ${APPDIR}*.dmg`; do
         echo "${dmg}"
         if [ -f "${dmg}" ]; then

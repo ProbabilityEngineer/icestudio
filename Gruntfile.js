@@ -611,7 +611,7 @@ module.exports = function (grunt) {
   //------------------------------------------------------------------
   //-- CLEAN:tmp
   //-- Add the "clean:tmp" command to the list of commands to execute
-  //-- It will be the last taks
+  //-- It will be the last task
   //------------------------------------------------------------------
   distPlatformTasks = distPlatformTasks.concat(['clean:tmp']);
 
@@ -759,7 +759,9 @@ module.exports = function (grunt) {
       if (process.platform !== 'win32') {
         exec(`chmod +x "${destHook}"`, (chmodErr) => {
           if (chmodErr) {
-            grunt.log.error(`❌ Error setting permissions: ${chmodErr.message}`);
+            grunt.log.error(
+              `❌ Error setting permissions: ${chmodErr.message}`
+            );
             return done(false);
           }
           grunt.log.writeln('✅ Execution permissions set');
