@@ -7,6 +7,7 @@
  --*/
 const originalPointerDown = joint.dia.LinkView.prototype.pointerdown;
 joint.dia.LinkView.prototype.pointerdown = function (evt, x, y) {
+  console.log('Click');
   // Delete marker icon -> default jointjs action
   if (evt.target.closest('.marker-vertex-remove')) {
     originalPointerDown.apply(this, arguments);
