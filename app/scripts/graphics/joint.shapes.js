@@ -8,7 +8,7 @@ var sha1 = require('sha1');
 var marked = require('marked'); // jshint unused:false
 var openurl = require('openurl'); // jshint unused:false
 var domCache = {};
-const WIRE_WIDTH = 1.5;
+const WIRE_WIDTH = 2;
 const DARWIN = Boolean(os.platform().indexOf('darwin') > -1);
 
 if (DARWIN) {
@@ -38,7 +38,7 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
                  <g class="port-default" id="port-default-<%= id %>-<%= port.id %>">\
                     <path/><rect/>\
                  </g>\
-                 <path class="port-wire" id="port-wire-<%= id %>-<%= port.id %>"/>\
+                 <path class="port-wire <%= wireClass %>" id="port-wire-<%= id %>-<%= port.id %>"/>\
                  <text class="port-label"/>\
                  <circle class="port-body" r="0"/>\
                </g>',
@@ -135,7 +135,10 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
             this._portSelectors = this._portSelectors.concat(
               _.keys(portAttributes)
             );
+
             _.extend(attrs, portAttributes);
+
+            // console.log('PORTS',portName, index,ports,attrs,portAttributes);
           },
           this
         );
@@ -204,6 +207,7 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
         id: port.id,
         type: type,
         fill: portColor,
+        size: port.size,
       },
     };
 
@@ -390,14 +394,25 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
     var $bottomPorts = this.$('.bottomPorts').empty();
     var portTemplate = _.template(this.model.portMarkup);
     var modelId = this.model.id;
+    //var wireClass = (this.model.size > 1)? 'wire-bus' : '';
+    //console.log('WIRE',this.model, wireClass, this.model.size);
 
+    var wireClass = '';
     _.each(
       _.filter(this.model.ports, function (p) {
         return p.type === 'left';
       }),
       function (port, index) {
+        wireClass = port.size > 1 ? 'wire-bus' : 'wire-single';
         $leftPorts.append(
-          V(portTemplate({ id: modelId, index: index, port: port })).node
+          V(
+            portTemplate({
+              id: modelId,
+              index: index,
+              port: port,
+              wireClass: wireClass,
+            })
+          ).node
         );
       }
     );
@@ -406,8 +421,16 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
         return p.type === 'right';
       }),
       function (port, index) {
+        wireClass = port.size > 1 ? 'wire-bus' : 'wire-single';
         $rightPorts.append(
-          V(portTemplate({ id: modelId, index: index, port: port })).node
+          V(
+            portTemplate({
+              id: modelId,
+              index: index,
+              port: port,
+              wireClass: wireClass,
+            })
+          ).node
         );
       }
     );
@@ -417,7 +440,14 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
       }),
       function (port, index) {
         $topPorts.append(
-          V(portTemplate({ id: modelId, index: index, port: port })).node
+          V(
+            portTemplate({
+              id: modelId,
+              index: index,
+              port: port,
+              wireClass: 'wire-single',
+            })
+          ).node
         );
       }
     );
@@ -427,7 +457,14 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
       }),
       function (port, index) {
         $bottomPorts.append(
-          V(portTemplate({ id: modelId, index: index, port: port })).node
+          V(
+            portTemplate({
+              id: modelId,
+              index: index,
+              port: port,
+              wireClass: 'wire-single',
+            })
+          ).node
         );
       }
     );
@@ -630,23 +667,17 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
       const rightPorts = this.model.get('rightPorts');
       const modelId = this.model.id;
 
-      //-- temporalBypass permit for the momment bypass the optimal filter,
-      //-- In the first render state not work properly and the render not works
-      //-- correctly, until this is fixed, bypass the optimization
-      //--
-      let temporalBypass = true;
       let width = WIRE_WIDTH * state.zoom;
 
-      if (temporalBypass || this.initialized === false) {
-        this.initialized = true;
-        const nwidth = width * 3;
-        let tokId = 'port-wire-' + modelId + '-';
-        let dome;
-        this.cacheDome = {};
-        let ckey = '--';
+      this.initialized = true;
+      const nwidth = width * 3;
+      let tokId = 'port-wire-' + modelId + '-';
+      let dome;
+      this.cacheDome = {};
+      let ckey = '--';
 
-        // Render ports width
-        if (typeof this.pwires === 'undefined') {
+      // CODE IN TESTING REMOVE IN NEXT ITERATION, NOT REMOVE FOR THE MOMENT
+      /*  if (typeof this.pwires === 'undefined') {
           this.pwires = this.$el[0].getElementsByClassName('port-wire');
         }
 
@@ -756,7 +787,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
             }
           }
         }
-      }
+      */
 
       this.onUpdating = false;
       return this.place('.generic-content', bbox, state, pendingTasks);

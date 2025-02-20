@@ -490,6 +490,7 @@ angular.module('icestudio').service(
       }
       let isOnZoom = false;
       let panFrameRequested = false;
+      let oncePerZoomHook = false;
       this.panAndZoom = svgPanZoom(targetElement.childNodes[2], {
         fit: false,
         center: false,
@@ -505,23 +506,32 @@ angular.module('icestudio').service(
           state.zoom = scale;
           if (state.mutateZoom === false) {
             state.mutateZoom = true;
-            disableAceEditors();
-            // Close expanded combo
-            if (document.activeElement.className === 'select2-search__field') {
-              $('select').select2('close');
+
+            if (!oncePerZoomHook) {
+              oncePerZoomHook = true;
+
+              disableAceEditors();
+              // Close expanded combo
+              if (
+                document.activeElement.className === 'select2-search__field'
+              ) {
+                $('select').select2('close');
+              }
             }
-            //-- Optimization strategy, try to launch a timeout that is deleted
-            //-- while user do the zoom, and when is finished, we is the only
-            //-- moment that routes are calculated.
           }
+          //-- Optimization strategy, try to launch a timeout that is deleted
+          //-- while user do the zoom, and when is finished, we is the only
+          //-- moment that routes are calculated.
+
           clearTimeout(zoomTimeout);
           zoomTimeout = setTimeout(() => {
+            //  document.documentElement.style.setProperty('--wire-width', WIRE_WIDTH*state.zoom);
             restoreAceEditors();
             requestAnimationFrame(() => {
               if (isOnZoom) {
                 isOnZoom = false;
+                oncePerZoomHook = false;
                 updateCellBoxes();
-
                 state.mutateZoom = false;
               }
             });

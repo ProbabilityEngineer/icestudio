@@ -271,7 +271,10 @@ joint.shapes.ice.CodeView = joint.shapes.ice.ModelView.extend({
         });
       }
     }
-
+    /* Maintain comment, code in testing 
+ *
+ *
+ *
     var wireWidth = WIRE_WIDTH * state.zoom;
     this.applyStyles(this.$el[0].getElementsByClassName('port-wire'), {
       'stroke-width': wireWidth + 'px',
@@ -305,7 +308,7 @@ joint.shapes.ice.CodeView = joint.shapes.ice.ModelView.extend({
           }
         }
       });
-    }
+    }*/
 
     var contentTransform = {
       left: Math.round((bbox.width / 2.0) * (state.zoom - 1)) + 'px',
@@ -334,21 +337,19 @@ joint.shapes.ice.CodeView = joint.shapes.ice.ModelView.extend({
   },
 
   /**
-   * Método auxiliar para aplicar estilos en lotes de forma segura.
+   * Temporal method to apply CSS rules in block, been removed in next interaction
    */
   applyStyles: function (elements, styles) {
     if (!elements) {
       return;
     }
 
-    // Asegurar que `elements` sea un array o NodeList
     if (!Array.isArray(elements) && !(elements instanceof NodeList)) {
       elements = [elements];
     }
 
     elements.forEach((element) => {
       if (element && element.style) {
-        // Validar que `element` no sea null/undefined
         Object.keys(styles).forEach((prop) => {
           element.style[prop] = styles[prop];
         });
