@@ -82,13 +82,13 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
           magnet: true,
         },
         '.port-default rect': {
-          x: '-32',
+          x: '-16',
           y: '-8',
           rx: '3',
           ry: '3',
         },
         '.port-default path': {
-          d: 'M 0 0 L -20 0',
+          d: 'M 0 0 L 0 0',
         },
       },
     },
@@ -723,36 +723,38 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
               value: nwidth + 'px',
             });
           }
-        }
+        }*/
 
-        // Render rules
-        var portDefault, paths, rects, j;
+      // Render rules
+      var portDefault, paths, rects, j;
 
-        if (data && data.ports && data.ports.in) {
-          tokId = 'port-default-' + modelId + '-';
-          for (i = 0; i < data.ports.in.length; i++) {
-            port = data.ports.in[i];
-            //portDefault = document.getElementById(tokId + port.name);
-            ckey = tokId + port.name;
-            portDefault =
-              typeof this.cacheDome[ckey] !== 'undefined'
-                ? this.cacheDome[ckey]
-                : document.getElementById(tokId + port.name);
-            this.cacheDome[ckey] = dome;
+      if (data && data.ports && data.ports.in) {
+        tokId = 'port-default-' + modelId + '-';
+        for (i = 0; i < data.ports.in.length; i++) {
+          port = data.ports.in[i];
+          //portDefault = document.getElementById(tokId + port.name);
+          ckey = tokId + port.name;
+          portDefault =
+            typeof this.cacheDome[ckey] !== 'undefined'
+              ? this.cacheDome[ckey]
+              : document.getElementById(tokId + port.name);
+          this.cacheDome[ckey] = dome;
 
-            if (
-              portDefault !== null &&
-              rules &&
-              port.default &&
-              port.default.apply
-            ) {
-              pendingTasks.push({
+          if (
+            portDefault !== null &&
+            rules &&
+            port.default &&
+            port.default.apply
+          ) {
+            portDefault.classList.add('port-visible');
+
+            /* pendingTasks.push({
                 e: portDefault,
                 property: 'display',
                 value: 'inline',
-              });
+              });*/
 
-              paths = domCache[tokId + port.name + 'path'];
+            /* paths = domCache[tokId + port.name + 'path'];
               if (!paths) {
                 paths = portDefault.querySelectorAll('path');
                 domCache[tokId + port.name + 'path'] = paths;
@@ -777,17 +779,20 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
                   property: 'stroke-width',
                   value: state.zoom + 'px',
                 });
-              }
-            } else {
+              }*/
+          } else {
+            if (portDefault !== null) {
+              portDefault.classList.remove('port-visible');
+            }
+            /*
               pendingTasks.push({
                 e: portDefault,
                 property: 'display',
                 value: 'none',
-              });
-            }
+              });*/
           }
         }
-      */
+      }
 
       this.onUpdating = false;
       return this.place('.generic-content', bbox, state, pendingTasks);

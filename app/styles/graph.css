@@ -61,3 +61,6 @@
   stroke-width: var(--wire-width, 1);
   vector-effect: none !important;
 }
+.port-default.port-visible {
+  display: inline;
+}
