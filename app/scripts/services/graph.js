@@ -1274,13 +1274,13 @@ angular.module('icestudio').service(
       utils.rootScopeSafeApply();
     };
 
-    /* this.updateWires = async function () {
+    this.updateWires = async function () {
       await updateWiresOnObstacles();
     };
-*/
-    this.updateWires = function () {
+
+    /* this.updateWires = function () {
       __updateWiresOnObstacles();
-    };
+    };*/
 
     function __updateWiresOnObstacles() {
       let cells = graph.getCells();
@@ -1298,12 +1298,12 @@ angular.module('icestudio').service(
       }
     }
 
-    /*function updateWiresOnObstacles() {
+    function updateWiresOnObstacles() {
       return new Promise((resolve) => {
         __updateWiresOnObstacles();
         resolve();
       });
-    }*/
+    }
 
     this.setBoardRules = function (rules) {
       let cells = graph.getCells();
