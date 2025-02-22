@@ -137,8 +137,6 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
             );
 
             _.extend(attrs, portAttributes);
-
-            // console.log('PORTS',portName, index,ports,attrs,portAttributes);
           },
           this
         );
@@ -211,10 +209,10 @@ joint.shapes.ice.Model = joint.shapes.basic.Generic.extend({
       },
     };
 
-    attrs[portDefaultSelector] = {
+    /*   attrs[portDefaultSelector] = {
       display: port.default && port.default.apply ? 'inline' : 'none',
     };
-
+*/
     if (type === 'leftPorts' || type === 'topPorts') {
       attrs[portSelector]['pointer-events'] = 'none';
       attrs[portWireSelector]['pointer-events'] = 'none';
@@ -394,8 +392,6 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
     var $bottomPorts = this.$('.bottomPorts').empty();
     var portTemplate = _.template(this.model.portMarkup);
     var modelId = this.model.id;
-    //var wireClass = (this.model.size > 1)? 'wire-bus' : '';
-    //console.log('WIRE',this.model, wireClass, this.model.size);
 
     var wireClass = '';
     _.each(

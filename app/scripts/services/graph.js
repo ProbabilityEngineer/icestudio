@@ -279,6 +279,7 @@ angular.module('icestudio').service(
           end,
           linkView
         ) {
+          console.log('CONN');
           // Prevent output-output links
           if (
             magnetS &&
@@ -1934,7 +1935,7 @@ angular.module('icestudio').service(
         if (callback) {
           callback();
         }
-
+        //paper.scale(1, 1);
         return true;
       }
 

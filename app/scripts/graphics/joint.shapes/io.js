@@ -19,22 +19,23 @@ joint.shapes.ice.IO = joint.shapes.ice.Model.extend({
   updateSize: function () {
     const fontSize = 14;
 
-    const name = this.get('data').name;
+    let name = this.get('data').name;
     const pins = this.get('data').pins;
 
-    let text = name;
-
-    for (var i in pins) {
-      if (pins[i].name.length > text.length) {
-        text = pins[i].name;
-      }
+    for (let i in pins) {
+      name =
+        pins[i].name !== null && pins[i].name.length > name.length
+          ? pins[i].name
+          : name;
     }
 
-    const context = document.createElement('canvas').getContext('2d');
-    context.font = `${fontSize}px Monaco`;
-    const textWidth = context.measureText(text).width;
-    const newWidth = Math.round(Math.max(textWidth + 50, 96));
-    this.resize(newWidth, this.size().height);
+    if (name.length > 0) {
+      const context = document.createElement('canvas').getContext('2d');
+      context.font = `${fontSize}px Monaco`;
+      const textWidth = context.measureText(name).width;
+      const newWidth = Math.round(Math.max(textWidth + 50, 96));
+      this.resize(newWidth, this.size().height);
+    }
   },
 });
 
@@ -81,7 +82,7 @@ joint.shapes.ice.InputLabel = joint.shapes.ice.IO.extend({
                <g class="port-default" id="port-default-<%= id %>-<%= port.id %>">\
                <path/><rect/>\
                </g>\
-               <path class="port-wire" id="port-wire-<%= id %>-<%= port.id %>"/>\
+               <path class="port-wire <%= wireClass %>" id="port-wire-<%= id %>-<%= port.id %>"/>\
                  <text class="port-label"/>\
                  <circle class="port-body" r="0"/>\
                </g>',
@@ -115,7 +116,7 @@ joint.shapes.ice.OutputLabel = joint.shapes.ice.IO.extend({
                <g class="port-default" id="port-default-<%= id %>-<%= port.id %>">\
                <path/><rect/>\
                </g>\
-               <path class="port-wire" id="port-wire-<%= id %>-<%= port.id %>"/>\
+               <path class="port-wire <%= wireClass %>" id="port-wire-<%= id %>-<%= port.id %>"/>\
                  <text class="port-label"/>\
                  <circle class="port-body" r="0"/>\
                </g>',
@@ -500,6 +501,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
         }
       }
     }*/
+
     //
     return this.place(data, bbox, state, pendingTasks);
   },

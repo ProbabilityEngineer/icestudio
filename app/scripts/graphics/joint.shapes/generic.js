@@ -240,7 +240,6 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
         tokId = 'port-default-' + modelId + '-';
         for (i = 0; i < data.ports.in.length; i++) {
           port = data.ports.in[i];
-          //portDefault = document.getElementById(tokId + port.name);
           ckey = tokId + port.name;
           portDefault =
             typeof this.cacheDome[ckey] !== 'undefined'
@@ -254,6 +253,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
             port.default &&
             port.default.apply
           ) {
+            console.log('PORT DEFAULT', portDefault, rules, port);
             portDefault.classList.add('port-visible');
 
             /* pendingTasks.push({
