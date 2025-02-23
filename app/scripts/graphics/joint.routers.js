@@ -20,7 +20,7 @@ joint.routers.ice = (function (g, _, joint) {
 
     // if number of route finding loops exceed the maximum, stops searching and returns
     // fallback route
-    maximumLoops: 300, //2000
+    maximumLoops: 280, //2000
 
     // possible starting directions from an element
     startDirections: ['right', 'bottom'],

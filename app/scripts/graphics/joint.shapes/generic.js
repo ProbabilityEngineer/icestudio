@@ -149,7 +149,7 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
           <div class="clock" style="top: ' +
             top +
             'px;">\
-            <svg width="12" height="18"><path d="M-1 0 l10 8-10 8" fill="none" stroke="#555" stroke-width="1.2" stroke-linejoin="round"/>\
+            <svg width="12" height="18"><path d="M-1 0 l10 8-10 8" class="clock-path"/>\
           </div>'
         );
       }

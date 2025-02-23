@@ -29,12 +29,6 @@ angular.module('icestudio').service(
     //-- More info: https://docs.nwjs.io/en/latest/References/Window/
     window
   ) {
-    let _this = this;
-
-    let autorouting = false;
-
-    let isRouting = false;
-
     let mousePosition = { x: 0, y: 0 };
     let needsUpdate = true;
 
@@ -48,16 +42,17 @@ angular.module('icestudio').service(
         });
       }
     });
-
+    /*
     this.route = function () {
+      return;
       if (!isRouting) {
         isRouting = true;
         _this.updateWires();
         isRouting = false;
       }
     };
-
-    this.enableAutoRouting = function () {
+*/
+    /* this.enableAutoRouting = function () {
       if (autorouting === false) {
         autorouting = true;
         $('body').on('Graph::updateWires', function () {
@@ -69,7 +64,7 @@ angular.module('icestudio').service(
     this.disableAutoRouting = function () {
       $('body').off('Graph::updateWires');
       autorouting = false;
-    };
+    };*/
 
     //-- ZOOM constants
     const ZOOM_MAX = 4;
@@ -1903,21 +1898,17 @@ angular.module('icestudio').service(
     this.loadDesign = function (design, opt, callback) {
       if (design && design.graph && design.graph.blocks && design.graph.wires) {
         opt = opt || { disabled: false, reset: true };
-        self.disableAutoRouting();
+        // self.disableAutoRouting();
         commandManager.stopListening();
 
         self.clearAll();
 
-        iprof.start('graphToCells2');
         let cells = graphToCells(design.graph, opt);
-        iprof.end('graphToCells2');
 
         graph.trigger('batch:start');
-        iprof.start('addCells');
         graph.addCells(cells);
 
         //addCells(cells);   --> This is an overlapping function with more functionality but heaviest
-        iprof.end('addCells');
 
         graph.trigger('batch:stop');
         self.setState(design.state);
@@ -1927,14 +1918,11 @@ angular.module('icestudio').service(
         }
         self.fitContent();
         //-- maintain autorouting disabled for the moment because there is overlapped routings
-        self.enableAutoRouting();
-        iprof.start('route');
-        self.route();
-        iprof.end('route');
+        // self.route();
         if (callback) {
           callback();
+          //self.enableAutoRouting();
         }
-        //paper.scale(1, 1);
         return true;
       }
 
@@ -2260,28 +2248,18 @@ angular.module('icestudio').service(
     }
 
     function addCells(cells) {
-      console.log('ADDCELLS');
-      iprof.start('updateCellAttributes');
       _.each(cells, function (cell) {
         updateCellAttributes(cell);
       });
-      iprof.end('updateCellAttributes');
-      iprof.start('graph.addCells');
-      console.log('CELLS', cells);
       graph.addCells(cells);
-      iprof.end('graph.addCells');
-      let cellView = false;
-      iprof.start('paper find');
-      _.each(cells, function (cell) {
+      /*_.each(cells, function (cell) {
         if (!cell.isLink()) {
           cellView = paper.findViewByModel(cell);
           if (cellView.$box.css('z-index') < z.index) {
             cellView.$box.css('z-index', ++z.index);
           }
         }
-      });
-      iprof.end('paper find');
-      iprof.print();
+      });*/
     }
 
     this.resetCodeErrors = function () {

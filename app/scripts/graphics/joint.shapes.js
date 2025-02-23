@@ -285,6 +285,7 @@ joint.shapes.ice.ModelView = joint.dia.ElementView.extend({
 
   setupResizer: function () {
     // Resizer
+
     if (!this.model.get('disabled')) {
       this.resizing = false;
       this.resizer = this.$box.find('.resizer');
