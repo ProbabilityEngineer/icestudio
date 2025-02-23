@@ -20,7 +20,7 @@ joint.routers.ice = (function (g, _, joint) {
 
     // if number of route finding loops exceed the maximum, stops searching and returns
     // fallback route
-    maximumLoops: 180, //2000
+    maximumLoops: 300, //2000
 
     // possible starting directions from an element
     startDirections: ['right', 'bottom'],
@@ -41,7 +41,7 @@ joint.routers.ice = (function (g, _, joint) {
 
     // padding applied on the element bounding boxes
     paddingBox: function () {
-      var step = 16;
+      var step = 15;
 
       return {
         x: -step,
