@@ -1,0 +1,60 @@
+description: Create a report to help us improve
+labels: ["bug"]
+name: Bug report
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Before you start
+
+        Please search our [existing issues](https://github.com/FPGAwars/icestudio/issues) and open [pull requests](https://github.com/FPGAwars/icestudio/pulls) to lessen the change of filing duplicate issues or feature requests. Thank you.
+
+        ---
+  - type: textarea
+    attributes:
+      label: Steps To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        Steps to reproduce the behavior:
+        1.  Go to '...'
+        2.  Click on '....'
+        3.  Scroll down to '....'
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      description: A clear and concise description of what you expected to happen.
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      description: A clear and concise description of what happens instead; what the bug is.
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      description: If applicable, add screenshots to help explain your problem.
+      label: Screenshots or video
+  - type: textarea
+    id: desktop
+    attributes:
+      label: Desktop (please complete the following information)
+      placeholder: |
+        - OS (e.g. iOS):
+        - Browser & version (e.g. Chrome 89.0):
+  - type: textarea
+    id: console-trace
+    attributes:
+      label: Web console trace
+      render: console
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Any other context about the problem.
