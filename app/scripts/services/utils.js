@@ -1611,8 +1611,8 @@ angular
 
       this.beginBlockingTask = async function () {
         angular.element('#menu').addClass('is-disabled');
-        document.body.classList.add('waiting');
-
+        //document.body.classList.add('waiting');
+        document.getElementById('spin-blocking-task').classList.add('waiting');
         await new Promise(requestAnimationFrame);
       };
 
@@ -1627,7 +1627,11 @@ angular
 
         // setTimeout(function(){
         angular.element('#menu').removeClass('is-disabled');
-        $('body').removeClass('waiting');
+
+        document
+          .getElementById('spin-blocking-task')
+          .classList.remove('waiting');
+        //  $('body').removeClass('waiting');
         // },1000);
       };
 

@@ -153,7 +153,8 @@
         z-index: 9999;
         display: none;
       }
-      body.waiting .spinner-wrapper {
+      /*body.waiting */
+      .spinner-wrapper.waiting {
         display: block;
       }
       .spinner-wrapper--bg {
@@ -304,7 +305,7 @@
       <!-- It is used for showing activity to the user -->
       <!-- The main interface is disabled and only the -->
       <!-- animation is shown                          -->
-      <div class="spinner-wrapper">
+      <div id="spin-blocking-task" class="spinner-wrapper">
         <div class="spinner-wrapper--bg"></div>
         <div class="spinner-wrapper--container">
           <div class="sk-cube-grid">

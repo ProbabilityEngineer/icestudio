@@ -469,6 +469,7 @@ joint.routers.ice = (function (g, _, joint) {
 
   // initiation of the route finding
   function router(vertices, opt) {
+    iprof.start('ROUTE');
     resolveOptions(opt);
 
     // jshint -W040
@@ -492,11 +493,13 @@ joint.routers.ice = (function (g, _, joint) {
     var sourceBBox = g.rect(this.sourceBBox);
     var targetBBox = g.rect(this.targetBBox);
 
+    iprof.start('ROUTE::OBSTACLEMAP');
     // pathfinding
     var map = new ObstacleMap(opt, this.paper).build(
       this.paper.model,
       this.model
     );
+    iprof.end('ROUTE::OBSTACLEMAP');
     var oldVertices = _.map(vertices, g.point);
     var newVertices = [];
     var tailPoint = sourceBBox.center().snapToGrid(opt.step);
@@ -553,6 +556,7 @@ joint.routers.ice = (function (g, _, joint) {
 
     // jshint +W040
 
+    iprof.end('ROUTE');
     return newVertices;
   }
 

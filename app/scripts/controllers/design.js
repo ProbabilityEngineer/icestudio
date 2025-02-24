@@ -109,7 +109,6 @@ angular
 
       $scope.editModeToggle = function ($event) {
         var btn = $event.currentTarget;
-        iprof.clear();
         if (!$scope.isNavigating) {
           utils.beginBlockingTask();
           var block = graph.breadcrumbs[graph.breadcrumbs.length - 1];
@@ -210,20 +209,11 @@ cells.sort((a, b) => {
               }
             });*/
 
-            iprof.start('setcells');
             $scope.graph.setCells(cells);
 
-            iprof.end('setcells');
-            iprof.start('toJSON');
             var graphData = $scope.graph.toJSON();
-            iprof.end('toJSON');
-            iprof.start('cellsToProject');
             var p = utils.cellsToProject(graphData.cells);
-            iprof.end('cellsToProject');
-            iprof.start('clone');
             tmp = utils.clone(common.allDependencies[block.type]);
-            iprof.end('clone');
-            iprof.print();
             tmp.design.graph = p.design.graph;
             var hId = block.type;
             common.allDependencies[hId] = tmp;
@@ -245,23 +235,18 @@ cells.sort((a, b) => {
             common.isEditingSubmodule = true;
             subModuleActive = true;
           }
-          requestAnimationFrame(() => {
-            setTimeout(() => {
-              iprof.start('navigateProject');
-              $rootScope.$broadcast('navigateProject', {
-                update: false,
-                project: tmp,
-                editMode: rw,
-                fromDoubleClick: false,
-              });
-              iprof.end('navigateProject');
-              iprof.start('safeApply');
-              utils.rootScopeSafeApply();
-              iprof.end('safeApply');
-              iprof.print();
-              utils.endBlockingTask();
-            }, 0);
-          });
+          //requestAnimationFrame(() => {
+          setTimeout(() => {
+            $rootScope.$broadcast('navigateProject', {
+              update: false,
+              project: tmp,
+              editMode: rw,
+              fromDoubleClick: false,
+            });
+            utils.rootScopeSafeApply();
+            utils.endBlockingTask();
+          }, 0);
+          // });
         }
       };
 
@@ -360,19 +345,12 @@ cells.sort((a, b) => {
             });
           });
         } else {
-          iprof.start('resetView');
           graph.resetView();
-          iprof.end('resetView');
 
-          iprof.start('loadDesign');
-          graph.loadDesign(args.project.design, opt, function () {
-            iprof.end('loadDesign');
-            //  utils.endBlockingTask();
-          });
+          graph.loadDesign(args.project.design, opt, function () {});
         }
         $scope.topModule = false;
         $scope.information = args.project.package;
-        //utils.rootScopeSafeApply();
         if (
           typeof common.forceBack !== 'undefined' &&
           common.forceBack === true
