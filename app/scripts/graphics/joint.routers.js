@@ -171,11 +171,19 @@ joint.routers.ice = (function (g, _, joint) {
   };
 
   ObstacleMap.prototype.isPointAccessible = function (point) {
-    var mapKey = point.clone().snapToGrid(this.mapGridSize).toString();
+    const mapKey = point.clone().snapToGrid(this.mapGridSize).toString();
+    const obstacles = this.map[mapKey];
 
-    return _.every(this.map[mapKey], function (obstacle) {
-      return !obstacle.containsPoint(point);
-    });
+    if (!obstacles) {
+      return true;
+    }
+
+    for (let i = 0; i < obstacles.length; i++) {
+      if (obstacles[i].containsPoint(point)) {
+        return false;
+      }
+    }
+    return true;
   };
 
   // Sorted Set
