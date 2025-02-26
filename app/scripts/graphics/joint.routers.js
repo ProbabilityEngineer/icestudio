@@ -206,6 +206,9 @@ joint.routers.ice = (function (g, _, joint) {
 
     this.values[item] = value;
 
+    //-- IMPORTANT, i'm trying to optimize this and for the moment
+    //-- all the intents generate poor route thatn lodash _.sortedIndex
+    //-- TODO: research lodash function code to understand what it do
     var index = _.sortedIndex(
       this.items,
       item,
@@ -273,27 +276,45 @@ joint.routers.ice = (function (g, _, joint) {
     return route;
   }
 
-  // find points around the rectangle taking given directions in the account
   function getRectPoints(bbox, directionList, opt) {
-    var step = opt.step;
-    var center = bbox.center();
-    var startPoints = _.chain(opt.directionMap)
-      .pick(directionList)
-      .map(function (direction) {
-        var x = (direction.x * bbox.width) / 2;
-        var y = (direction.y * bbox.height) / 2;
+    const step = opt.step;
+    const centerX = bbox.x + bbox.width / 2; // Centro precalculado
+    const centerY = bbox.y + bbox.height / 2;
+    const halfWidth = bbox.width / 2;
+    const halfHeight = bbox.height / 2;
+    const directionMap = opt.directionMap;
+    const points = [];
 
-        var point = center.clone().offset(x, y);
+    for (let i = 0; i < directionList.length; i++) {
+      const dirKey = directionList[i];
+      const direction = directionMap[dirKey];
+      if (!direction) {
+        continue;
+      } // Saltar si la dirección no existe
 
-        if (bbox.containsPoint(point)) {
-          point.offset(direction.x * step, direction.y * step);
-        }
+      // Calcular posición inicial
+      let x = centerX + direction.x * halfWidth;
+      let y = centerY + direction.y * halfHeight;
 
-        return point.snapToGrid(step);
-      })
-      .value();
+      // Verificar si el punto está dentro del bbox y ajustar
+      if (
+        x >= bbox.x &&
+        x <= bbox.x + bbox.width &&
+        y >= bbox.y &&
+        y <= bbox.y + bbox.height
+      ) {
+        x += direction.x * step;
+        y += direction.y * step;
+      }
 
-    return startPoints;
+      // Ajustar a la cuadrícula
+      x = Math.round(x / step) * step;
+      y = Math.round(y / step) * step;
+
+      points.push(g.point(x, y)); // Asumiendo que g.point es un objeto {x, y}
+    }
+
+    return points;
   }
 
   // returns a direction index from start point to end point
@@ -477,7 +498,6 @@ joint.routers.ice = (function (g, _, joint) {
 
   // initiation of the route finding
   function router(vertices, opt) {
-    iprof.start('ROUTE');
     resolveOptions(opt);
 
     // jshint -W040
@@ -501,13 +521,11 @@ joint.routers.ice = (function (g, _, joint) {
     var sourceBBox = g.rect(this.sourceBBox);
     var targetBBox = g.rect(this.targetBBox);
 
-    iprof.start('ROUTE::OBSTACLEMAP');
     // pathfinding
     var map = new ObstacleMap(opt, this.paper).build(
       this.paper.model,
       this.model
     );
-    iprof.end('ROUTE::OBSTACLEMAP');
     var oldVertices = _.map(vertices, g.point);
     var newVertices = [];
     var tailPoint = sourceBBox.center().snapToGrid(opt.step);
@@ -562,9 +580,6 @@ joint.routers.ice = (function (g, _, joint) {
       Array.prototype.push.apply(newVertices, partialRoute);
     }
 
-    // jshint +W040
-
-    iprof.end('ROUTE');
     return newVertices;
   }
 
