@@ -48,7 +48,7 @@ joint.shapes.ice.Wire = joint.dia.Link.extend({
 
   bifurcationMarkup: [
     '<g class="marker-bifurcation-group" transform="translate(<%= x %>, <%= y %>)">',
-    '<circle class="marker-bifurcation" idx="<%= idx %>" r="<%= r %>" fill="#8bbd05"/>',
+    '<circle class="marker-bifurcation" idx="<%= idx %>" r="<%= r %>" fill="#8bbd0555"/>',
     '</g>',
   ].join(''),
 
@@ -105,7 +105,6 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
 
   initialize: function () {
     joint.dia.LinkView.prototype.initialize.apply(this, arguments);
-    // requestAnimationFrame(() => {
     setTimeout(() => {
       var size = this.model.get('size');
 
@@ -115,12 +114,10 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
           port,
           portName = this.model.get('source').port;
         var rightPorts = this.sourceView.model.get('rightPorts');
-        // Initialize wire properties
         for (i in rightPorts) {
           port = rightPorts[i];
           if (portName === port.id) {
             size = port.size;
-            // For wire size connection validation
             this.model.attributes.size = size;
             break;
           }
@@ -139,7 +136,7 @@ joint.shapes.ice.WireView = joint.dia.LinkView.extend({
     }, 0);
     setTimeout(() => {
       this.updateBifurcations();
-    }, 50);
+    }, 0);
   },
 
   apply: function () {

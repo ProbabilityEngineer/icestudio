@@ -315,16 +315,6 @@ joint.shapes.ice.MemoryView = joint.shapes.ice.ModelView.extend({
       this.editor.resize();
     }
 
-    /*var wireWidth = WIRE_WIDTH * state.zoom;
-    var wires = this.$el[0].getElementsByClassName('port-wire');
-    for (var j = 0; j < wires.length; j++) {
-      pendingTasks.push({
-        e: wires[j],
-        property: 'stroke-width',
-        value: wireWidth + 'px',
-      });
-    }
-*/
     var topOffset = data.name || data.local ? 0 : 24;
     pendingTasks.push(
       {

@@ -387,17 +387,9 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     const size = this.model.get('size');
     this.virtualContentSelector.width(size.width);
     var pendingTasks = [];
-    var i, j, port;
     var bbox = this.model.getBBox();
     var data = this.model.get('data');
     var state = this.model.get('state');
-    var rules = this.model.get('rules');
-    var leftPorts = this.model.get('leftPorts');
-    var rightPorts = this.model.get('rightPorts');
-    var modelId = this.model.id;
-    var portDefault, tokId, dome;
-    var paths, rects;
-    var width = WIRE_WIDTH * state.zoom;
     return this.placeIO(data, bbox, state, pendingTasks);
   },
   removeBox: function () {

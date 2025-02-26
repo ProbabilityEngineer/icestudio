@@ -116,29 +116,14 @@ joint.shapes.ice.ConstantView = joint.shapes.ice.ModelView.extend({
     joint.dia.ElementView.prototype.update.apply(this, arguments);
   },
 
-  place: placementCssTasks,
   updateBox: function () {
     const size = this.model.get('size');
     this.contentSelector.width(size.width);
     this.inputSelector.width(Math.round(size.width * 0.8));
     let bbox = this.model.getBBox();
-    //var data = this.model.get("data");
     let state = this.model.get('state');
     let pendingTasks = [];
     // Set wire width
-    let width = WIRE_WIDTH * state.zoom;
-    //var pwires = this.$el[0].getElementsByClassName("port-wire");
-    /*if (typeof this.pwires === 'undefined') {
-      this.pwires = this.$el[0].getElementsByClassName('port-wire');
-    }
-    let i;
-    for (i = 0; i < this.pwires.length; i++) {
-      pendingTasks.push({
-        e: this.pwires[i],
-        property: 'stroke-width',
-        value: width + 'px',
-      });
-    }*/
     return this.place('.constant-content', bbox, state, pendingTasks);
   },
 });

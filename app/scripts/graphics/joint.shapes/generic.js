@@ -157,8 +157,6 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
   onUpdating: false,
   initialized: false,
 
-  // place:placementCssTasks,
-
   updateBox: function () {
     if (this.onUpdating === false) {
       this.onUpdating = true;
@@ -201,56 +199,5 @@ joint.shapes.ice.GenericView = joint.shapes.ice.ModelView.extend({
       this.onUpdating = false;
       this.place('.generic-content', bbox, state, []);
     }
-  },
-  updateBoxOriginal: function () {
-    if (this.onUpdating === false) {
-      this.onUpdating = true;
-      let pendingTasks = [];
-      let i, port;
-      const bbox = this.model.getBBox();
-
-      let data = this.model.get('data');
-      const state = this.model.get('state');
-      const rules = this.model.get('rules');
-      const modelId = this.model.id;
-
-      this.initialized = true;
-      let tokId = 'port-wire-' + modelId + '-';
-      let dome;
-      this.cacheDome = {};
-      let ckey = '--';
-
-      var portDefault;
-
-      if (data && data.ports && data.ports.in) {
-        tokId = 'port-default-' + modelId + '-';
-        for (i = 0; i < data.ports.in.length; i++) {
-          port = data.ports.in[i];
-          ckey = tokId + port.name;
-          portDefault =
-            typeof this.cacheDome[ckey] !== 'undefined'
-              ? this.cacheDome[ckey]
-              : document.getElementById(tokId + port.name);
-          this.cacheDome[ckey] = dome;
-
-          if (
-            portDefault !== null &&
-            rules &&
-            port.default &&
-            port.default.apply
-          ) {
-            portDefault.classList.add('port-visible');
-          } else {
-            if (portDefault !== null) {
-              portDefault.classList.remove('port-visible');
-            }
-          }
-        }
-      }
-
-      this.onUpdating = false;
-      this.place('.generic-content', bbox, state, pendingTasks);
-    }
-    //return false;
   },
 });

@@ -1,7 +1,6 @@
 'use strict';
 /* jshint unused:false */
-function placementCssIOTasks(data, bbox, state, queue) {
-  /* jshint validthis: true */
+/*function placementCssIOTasks(data, bbox, state, queue) {
   let virtualtopOffset = 24;
   let i = 0;
   let bx = Math.round(bbox.x * state.zoom + state.pan.x);
@@ -119,7 +118,6 @@ function placementCssIOTasks(data, bbox, state, queue) {
 }
 
 function placementCssTasks(selector, bbox, state, queue) {
-  /* jshint validthis: true */
   let i = 0;
   let bw = Math.round(bbox.width);
   let bh = Math.round(bbox.height);
@@ -197,5 +195,5 @@ function placementCssTasks(selector, bbox, state, queue) {
 
   return queue;
 }
-
+*/
 /* jshint unused:true */
