@@ -197,28 +197,41 @@ joint.routers.ice = (function (g, _, joint) {
   }
 
   SortedSet.prototype.add = function (item, value) {
-    if (this.hash[item]) {
-      // item removal
-      this.items.splice(this.items.indexOf(item), 1);
+    const items = this.items;
+    const hash = this.hash;
+    const values = this.values;
+
+    if (hash[item]) {
+      const currentIndex = items.indexOf(item);
+      if (currentIndex !== -1) {
+        items.splice(currentIndex, 1);
+      }
     } else {
-      this.hash[item] = this.OPEN;
+      hash[item] = this.OPEN;
     }
 
-    this.values[item] = value;
+    values[item] = value;
 
-    //-- IMPORTANT, i'm trying to optimize this and for the moment
-    //-- all the intents generate poor route thatn lodash _.sortedIndex
-    //-- TODO: research lodash function code to understand what it do
-    var index = _.sortedIndex(
-      this.items,
-      item,
-      function (i) {
-        return this.values[i];
-      },
-      this
-    );
+    let left = 0;
+    let right = items.length;
+    const itemValue = Number.isNaN(value) ? Infinity : value;
 
-    this.items.splice(index, 0, item);
+    while (left < right) {
+      /* jshint bitwise: false */
+      const mid = (left + right) >>> 1; // Fast Division
+      /* jshint bitwise: true */
+      const midValue = values[items[mid]];
+
+      if (Number.isNaN(midValue)) {
+        right = mid;
+      } else if (midValue < itemValue) {
+        left = mid + 1;
+      } else {
+        right = mid;
+      }
+    }
+
+    items.splice(left, 0, item);
   };
 
   SortedSet.prototype.remove = function (item) {
@@ -278,7 +291,7 @@ joint.routers.ice = (function (g, _, joint) {
 
   function getRectPoints(bbox, directionList, opt) {
     const step = opt.step;
-    const centerX = bbox.x + bbox.width / 2; // Centro precalculado
+    const centerX = bbox.x + bbox.width / 2;
     const centerY = bbox.y + bbox.height / 2;
     const halfWidth = bbox.width / 2;
     const halfHeight = bbox.height / 2;
@@ -290,13 +303,10 @@ joint.routers.ice = (function (g, _, joint) {
       const direction = directionMap[dirKey];
       if (!direction) {
         continue;
-      } // Saltar si la dirección no existe
-
-      // Calcular posición inicial
+      }
       let x = centerX + direction.x * halfWidth;
       let y = centerY + direction.y * halfHeight;
 
-      // Verificar si el punto está dentro del bbox y ajustar
       if (
         x >= bbox.x &&
         x <= bbox.x + bbox.width &&
@@ -307,11 +317,10 @@ joint.routers.ice = (function (g, _, joint) {
         y += direction.y * step;
       }
 
-      // Ajustar a la cuadrícula
       x = Math.round(x / step) * step;
       y = Math.round(y / step) * step;
 
-      points.push(g.point(x, y)); // Asumiendo que g.point es un objeto {x, y}
+      points.push(g.point(x, y));
     }
 
     return points;
@@ -342,13 +351,11 @@ joint.routers.ice = (function (g, _, joint) {
     return min;
   }
 
-  // finds the route between to points/rectangles implementing A* alghoritm
   function findRoute(start, end, map, opt) {
-    var step = opt.step;
-    var startPoints, endPoints;
-    var startCenter, endCenter;
+    const step = opt.step;
+    let startPoints, endPoints;
+    let startCenter, endCenter;
 
-    // set of points we start pathfinding from
     if (start instanceof g.rect) {
       startPoints = getRectPoints(start, opt.startDirections, opt);
       startCenter = start.center().snapToGrid(step);
@@ -357,7 +364,6 @@ joint.routers.ice = (function (g, _, joint) {
       startPoints = [startCenter];
     }
 
-    // set of points we want the pathfinding to finish at
     if (end instanceof g.rect) {
       endPoints = getRectPoints(end, opt.endDirections, opt);
       endCenter = end.center().snapToGrid(step);
@@ -366,55 +372,61 @@ joint.routers.ice = (function (g, _, joint) {
       endPoints = [endCenter];
     }
 
-    // take into account only accessible end points
-    startPoints = _.filter(startPoints, map.isPointAccessible, map);
-    endPoints = _.filter(endPoints, map.isPointAccessible, map);
+    const accessibleStartPoints = [];
+    for (let i = 0; i < startPoints.length; i++) {
+      if (map.isPointAccessible(startPoints[i])) {
+        accessibleStartPoints.push(startPoints[i]);
+      }
+    }
+    startPoints = accessibleStartPoints;
 
-    // Check if there is a accessible end point.
-    // We would have to use a fallback route otherwise.
+    const accessibleEndPoints = [];
+    for (let i = 0; i < endPoints.length; i++) {
+      if (map.isPointAccessible(endPoints[i])) {
+        accessibleEndPoints.push(endPoints[i]);
+      }
+    }
+    endPoints = accessibleEndPoints;
+
     if (startPoints.length > 0 && endPoints.length > 0) {
-      // The set of tentative points to be evaluated, initially containing the start points.
-      var openSet = new SortedSet();
-      // Keeps reference to a point that is immediate predecessor of given element.
-      var parents = {};
-      // Cost from start to a point along best known path.
-      var costs = {};
+      const openSet = new SortedSet();
+      const parents = {};
+      const costs = {};
+      const dirs = opt.directions;
+      const dirLen = dirs.length;
+      const penalties = opt.penalties;
+      let loopsRemain = opt.maximumLoops;
 
-      startPoints.forEach(function (point) {
-        var key = point.toString();
+      const endPointsKeys = new Array(endPoints.length);
+      for (let i = 0; i < endPoints.length; i++) {
+        endPointsKeys[i] = endPoints[i].toString();
+      }
+
+      for (let i = 0; i < startPoints.length; i++) {
+        const point = startPoints[i];
+        const key = point.toString();
         openSet.add(key, estimateCost(point, endPoints));
         costs[key] = 0;
-      });
+      }
 
-      // directions
-      var dir, dirChange;
-      var dirs = opt.directions;
-      var dirLen = dirs.length;
-      var loopsRemain = opt.maximumLoops;
-      var endPointsKeys = _.invoke(endPoints, 'toString');
+      let currentDirAngle;
+      let previousDirAngle;
 
-      var currentDirAngle;
-      var previousDirAngle;
-
-      // main route finding loop
       while (!openSet.isEmpty() && loopsRemain > 0) {
-        // remove current from the open list
-        var currentKey = openSet.pop();
-        var currentPoint = g.point(currentKey);
-        var currentDist = costs[currentKey];
+        const currentKey = openSet.pop();
+        const currentPoint = g.point(currentKey);
+        const currentDist = costs[currentKey];
         previousDirAngle = currentDirAngle;
-        // jshint -W116
+        /* jshint eqeqeq: false */
         currentDirAngle = parents[currentKey]
           ? getDirectionAngle(parents[currentKey], currentPoint, dirLen)
           : opt.previousDirAngle != null
             ? opt.previousDirAngle
             : getDirectionAngle(startCenter, currentPoint, dirLen);
-        // jshint +W116
+        /* jshint eqeqeq: true */
 
-        // Check if we reached any endpoint
         if (endPointsKeys.indexOf(currentKey) >= 0) {
-          // We don't want to allow route to enter the end point in opposite direction.
-          dirChange = getDirectionChange(
+          const dirChange = getDirectionChange(
             currentDirAngle,
             getDirectionAngle(currentPoint, endCenter, dirLen)
           );
@@ -429,22 +441,19 @@ joint.routers.ice = (function (g, _, joint) {
           }
         }
 
-        // Go over all possible directions and find neighbors.
-        for (var i = 0; i < dirLen; i++) {
-          dir = dirs[i];
-          dirChange = getDirectionChange(currentDirAngle, dir.angle);
-          // if the direction changed rapidly don't use this point
-          // Note that check is relevant only for points with previousDirAngle i.e.
-          // any direction is allowed for starting points
+        for (let i = 0; i < dirLen; i++) {
+          const dir = dirs[i];
+          const dirChange = getDirectionChange(currentDirAngle, dir.angle);
+
           if (previousDirAngle && dirChange > opt.maxAllowedDirectionChange) {
             continue;
           }
 
-          var neighborPoint = currentPoint
+          const neighborPoint = currentPoint
             .clone()
             .offset(dir.offsetX, dir.offsetY);
-          var neighborKey = neighborPoint.toString();
-          // Closed points from the openSet were already evaluated.
+          const neighborKey = neighborPoint.toString();
+
           if (
             openSet.isClose(neighborKey) ||
             !map.isPointAccessible(neighborPoint)
@@ -452,15 +461,16 @@ joint.routers.ice = (function (g, _, joint) {
             continue;
           }
 
-          // The current direction is ok to proccess.
-          var costFromStart = currentDist + dir.cost + opt.penalties[dirChange];
+          const penalty =
+            penalties[dirChange] !== undefined
+              ? penalties[dirChange]
+              : Infinity;
+          const costFromStart = currentDist + dir.cost + penalty;
 
           if (
             !openSet.isOpen(neighborKey) ||
             costFromStart < costs[neighborKey]
           ) {
-            // neighbor point has not been processed yet or the cost of the path
-            // from start is lesser than previously calcluated.
             parents[neighborKey] = currentPoint;
             costs[neighborKey] = costFromStart;
             openSet.add(
@@ -474,8 +484,6 @@ joint.routers.ice = (function (g, _, joint) {
       }
     }
 
-    // no route found ('to' point wasn't either accessible or finding route took
-    // way to much calculations)
     return opt.fallbackRoute(startCenter, endCenter, opt);
   }
 
