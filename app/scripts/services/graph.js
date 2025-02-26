@@ -187,58 +187,46 @@ angular.module('icestudio').service(
     //-- displayed
     //-----------------------------------------------------------------------
     this.fitContent = function () {
-      //-- The circuit contains at least one element
       if (!this.isEmpty()) {
-        //-- Get the current window from NW
-        let win = window.get();
+        const win = window.get();
 
-        // Target box: The circuit is fit inside this target box
-        let tbox = {
+        const targetBox = {
           x: CIRCUIT_MARGIN,
           y: CIRCUIT_MARGIN,
           width: win.width - 2 * CIRCUIT_MARGIN,
           height: win.height - MENU_FOOTER_HEIGHT - 2 * CIRCUIT_MARGIN,
         };
 
-        // Source box
-        let sbox = V(paper.viewport).bbox(true, paper.svg);
-        sbox = {
-          x: sbox.x * state.zoom,
-          y: sbox.y * state.zoom,
-          width: sbox.width * state.zoom,
-          height: sbox.height * state.zoom,
+        const sourceBbox = V(paper.viewport).bbox(true, paper.svg);
+        const zoom = state.zoom;
+        const sourceBox = {
+          x: sourceBbox.x * zoom,
+          y: sourceBbox.y * zoom,
+          width: sourceBbox.width * zoom,
+          height: sourceBbox.height * zoom,
         };
-        var scale;
-        if (tbox.width / sbox.width > tbox.height / sbox.height) {
-          scale = tbox.height / sbox.height;
-        } else {
-          scale = tbox.width / sbox.width;
-        }
-        if (state.zoom * scale > 1) {
-          scale = 1 / state.zoom;
-        }
-        const target = {
-          x: tbox.x + tbox.width / 2,
-          y: tbox.y + tbox.height / 2,
-        };
-        const source = {
-          x: sbox.x + sbox.width / 2,
-          y: sbox.y + sbox.height / 2,
-        };
+
+        const scale = Math.min(
+          targetBox.height / sourceBox.height,
+          targetBox.width / sourceBox.width
+        );
+        const finalScale = zoom * scale > 1 ? 1 / zoom : scale;
+
+        const targetCenterX = targetBox.x + targetBox.width / 2;
+        const targetCenterY = targetBox.y + targetBox.height / 2;
+        const sourceCenterX = sourceBox.x + sourceBox.width / 2;
+        const sourceCenterY = sourceBox.y + sourceBox.height / 2;
+
         this.setState({
           pan: {
-            x: target.x - source.x * scale,
-            y: target.y - source.y * scale,
+            x: targetCenterX - sourceCenterX * finalScale,
+            y: targetCenterY - sourceCenterY * finalScale,
           },
-          zoom: state.zoom * scale,
+          zoom: zoom * finalScale,
         });
-        this.fitPaper();
-      }
 
-      //-- The circuit is blank: No elements
-      else {
-        //-- Reset the current view
-        //-- Nothing to fit
+        this.fitPaper();
+      } else {
         this.resetView();
       }
     };
@@ -254,8 +242,8 @@ angular.module('icestudio').service(
 
       paper = new joint.dia.Paper({
         el: element,
-        width: 10000,
-        height: 5000,
+        width: 6000,
+        height: 3000,
         model: graph,
         gridSize: gridsize,
         interactive: true,
@@ -277,7 +265,6 @@ angular.module('icestudio').service(
           end,
           linkView
         ) {
-          console.log('CONN');
           // Prevent output-output links
           if (
             magnetS &&
@@ -359,13 +346,10 @@ angular.module('icestudio').service(
                 )
               );
             }
-            console.log('PULLUP');
             return ret;
           }
           // Prevent different size connections
-          //
 
-          //         requestAnimationFrame(() => linkView.model.toBack());
           let tsize = 0;
           let lsize = linkView.model.get('size');
           let portId = magnetT.getAttribute('port');
@@ -454,43 +438,46 @@ angular.module('icestudio').service(
       let targetElement = element[0];
       let zoomTimeout;
       let cacheEditors = [];
-      let cacheCodeBlocks = [];
       function disableAceEditors() {
         cacheEditors = [];
-        cacheCodeBlocks = [];
 
         cacheEditors = document.querySelectorAll('.ace_editor');
-        //cacheCodeBlocks = document.querySelectorAll('.code-block');
-        cacheEditors.forEach((editor) => {
-          editor.style.display = 'none';
+        requestAnimationFrame(() => {
+          cacheEditors.forEach((editor) => {
+            editor.style.display = 'none';
+          });
         });
       }
       function restoreAceEditors() {
-        cacheEditors.forEach((editor) => {
-          editor.style.display = 'block';
+        requestAnimationFrame(() => {
+          cacheEditors.forEach((editor) => {
+            editor.style.display = 'block';
+          });
+
+          const baseGutterWidth = 50;
+          const baseGutterPLeft = 19;
+          const baseGutterPRight = 13;
+          const newWidth = baseGutterWidth * state.zoom;
+          const newPLeft = baseGutterPLeft * state.zoom;
+          const newPRight = baseGutterPRight * state.zoom;
+
+          document.documentElement.style.setProperty(
+            '--gutter-width',
+            newWidth + 'px'
+          );
+          document.documentElement.style.setProperty(
+            '--gutter-padding-left',
+            newPLeft + 'px'
+          );
+          document.documentElement.style.setProperty(
+            '--gutter-padding-right',
+            newPRight + 'px'
+          );
+          document.documentElement.style.setProperty(
+            '--editor-content-scroller-left',
+            newWidth + 'px'
+          );
         });
-        const baseGutterWidth = 50;
-        const baseGutterPLeft = 19;
-        const baseGutterPRight = 13;
-        const newWidth = baseGutterWidth * state.zoom;
-        const newPLeft = baseGutterPLeft * state.zoom;
-        const newPRight = baseGutterPRight * state.zoom;
-        document.documentElement.style.setProperty(
-          '--gutter-width',
-          newWidth + 'px'
-        );
-        document.documentElement.style.setProperty(
-          '--gutter-padding-left',
-          newPLeft + 'px'
-        );
-        document.documentElement.style.setProperty(
-          '--gutter-padding-right',
-          newPRight + 'px'
-        );
-        document.documentElement.style.setProperty(
-          '--editor-content-scroller-left',
-          newWidth + 'px'
-        );
       }
       let isOnZoom = false;
       let panFrameRequested = false;
@@ -528,16 +515,16 @@ angular.module('icestudio').service(
 
           clearTimeout(zoomTimeout);
           zoomTimeout = setTimeout(() => {
-            //  document.documentElement.style.setProperty('--wire-width', WIRE_WIDTH*state.zoom);
-            // requestAnimationFrame(() => {
             if (isOnZoom) {
               restoreAceEditors();
               isOnZoom = false;
               oncePerZoomHook = false;
-              updateCellBoxes();
               state.mutateZoom = false;
+              //-- Remove because i link updateCellboxes action to render browser flow
+              //-- maintain to remember it and do a window frame time for testing until
+              //-- remove it
+              //updateCellBoxes();
             }
-            //});
           }, 400);
         },
         onPan: function (newPan) {
@@ -1559,7 +1546,7 @@ angular.module('icestudio').service(
           });
         });
         graph.trigger('batch:start');
-        addCells(cells);
+        graph.addCells(cells);
         disableSelected();
         let opt = { transparent: true };
         _.each(cells, function (cell) {
@@ -2299,20 +2286,21 @@ angular.module('icestudio').service(
       }
     }
 
+    /*
     function addCells(cells) {
       _.each(cells, function (cell) {
         updateCellAttributes(cell);
       });
       graph.addCells(cells);
-      /*_.each(cells, function (cell) {
-        if (!cell.isLink()) {
-          cellView = paper.findViewByModel(cell);
-          if (cellView.$box.css('z-index') < z.index) {
-            cellView.$box.css('z-index', ++z.index);
-          }
-        }
-      });*/
-    }
+      //-- _.each(cells, function (cell) {
+       // if (!cell.isLink()) {
+      //    cellView = paper.findViewByModel(cell);
+       //   if (cellView.$box.css('z-index') < z.index) {
+       //     cellView.$box.css('z-index', ++z.index);
+       //   }
+       // }
+      //-- });
+    }*/
 
     this.resetCodeErrors = function () {
       let cells = graph.getCells();
