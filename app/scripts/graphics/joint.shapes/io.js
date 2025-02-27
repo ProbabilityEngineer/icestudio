@@ -207,15 +207,16 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     this.virtualContentSelector = this.$box.find('.io-virtual-content');
     this.fpgaContentSelector = this.$box.find('.io-fpga-content');
     this.headerSelector = this.$box.find('.header');
-
-    let vcs = domCache[this.id + this.cid + '.io-virtual-content'];
+    const dkey = this.id + this.cid + '.io-virtual-content';
+    let vcs = domCache[dkey];
     if (!vcs) {
       vcs = this.$box[0].querySelectorAll('.io-virtual-content');
       domCache[this.id + this.cid + '.io-virtual-content'] = vcs;
     } else {
-      //    console.log('DOMHIT');
+      console.log('DOMHIT');
     }
 
+    console.log(vcs, this, modelId, domCache, ' ==>' + dkey);
     let fcs = domCache[this.id + this.cid + '.io-fpga-content'];
     if (!fcs) {
       fcs = this.$box[0].querySelectorAll('.io-fpga-content');
