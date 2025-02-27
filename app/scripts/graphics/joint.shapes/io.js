@@ -212,19 +212,13 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     if (!vcs) {
       vcs = this.$box[0].querySelectorAll('.io-virtual-content');
       domCache[this.id + this.cid + '.io-virtual-content'] = vcs;
-    } else {
-      console.log('DOMHIT');
     }
 
-    console.log(vcs, this, modelId, domCache, ' ==>' + dkey);
     let fcs = domCache[this.id + this.cid + '.io-fpga-content'];
     if (!fcs) {
       fcs = this.$box[0].querySelectorAll('.io-fpga-content');
       domCache[this.id + this.cid + '.io-fpga-content'] = fcs;
-    } else {
-      //     console.log('DOMHIT');
     }
-
     this.nativeDom = {
       box: this.$box[0],
       virtualContentSelector: vcs,

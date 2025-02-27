@@ -556,7 +556,7 @@ angular.module('icestudio').service(
           graph.startBatch('batch-update');
 
           let index = 0;
-          const batchSize = 100; // Small set for DOM manipulation batch
+          const batchSize = 50; // Small set for DOM manipulation batch
 
           function processBatch() {
             const startTime = performance.now();
@@ -600,10 +600,12 @@ angular.module('icestudio').service(
           queuePanZoom.length = 0;
           updateCellBoxes();
         }
-        requestAnimationFrame(loopUpdateBoxes);
+        //  requestAnimationFrame(loopUpdateBoxes);
+        setTimeout(() => loopUpdateBoxes(), 150);
       }
 
-      requestAnimationFrame(loopUpdateBoxes);
+      // requestAnimationFrame(loopUpdateBoxes);
+      setTimeout(() => loopUpdateBoxes(), 150);
 
       let shiftPressed = false;
 
