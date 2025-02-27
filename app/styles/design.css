@@ -195,7 +195,7 @@ g {
   position: absolute;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.2s;
+  /*transition: opacity 0.2s;*/
 }
 
 .generic-block .generic-content {
@@ -299,7 +299,7 @@ g {
   position: absolute;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.2s;
+  /*transition: opacity 0.2s;*/
 }
 
 .io-block .io-virtual-content {
@@ -318,13 +318,12 @@ g {
 
 .io-block .io-virtual-content .header label {
   flex-grow: 1;
-  height: 100%;
+  height: 20px;
   text-align: center;
   font-size: 14px;
   font-weight: normal;
   line-height: 18px;
   color: #222;
-  text-overflow: ellipsis;
   overflow: hidden;
 }
 
@@ -337,7 +336,7 @@ g {
 
 .io-block .io-fpga-content {
   position: absolute;
-  width: 100%;
+  width: 96px;
   background: #fbfbc9;
   border-radius: 5px;
   border: 1px solid #777;
@@ -352,7 +351,7 @@ g {
 
 .io-block .io-fpga-content .header label {
   flex-grow: 1;
-  height: 100%;
+  height: 20px;
   text-align: center;
   font-size: 14px;
   font-weight: normal;
@@ -429,7 +428,7 @@ g {
   position: absolute;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.2s;
+  /* transition: opacity 0.2s;*/
 }
 
 .constant-block .constant-content {
@@ -489,7 +488,7 @@ g {
   position: absolute;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.2s;
+  /* transition: opacity 0.2s;*/
 }
 
 .memory-block .memory-content {
@@ -569,7 +568,7 @@ g {
   position: absolute;
   pointer-events: none;
   z-index: 0;
-  transition: opacity 0.2s;
+  /*transition: opacity 0.2s;*/
 }
 
 .info-block .info-content {
@@ -734,11 +733,11 @@ g {
 
 .link.joint-theme-default .marker-vertex-remove {
   fill: #fff;
-  transition: opacity 0.4s;
+  /* transition: opacity 0.4s;*/
 }
 .link.joint-theme-default .marker-vertex-remove-area {
   fill: #333;
-  transition: opacity 0.4s;
+  /* transition: opacity 0.4s;*/
 }
 
 /* Resizer */
@@ -889,8 +888,8 @@ g {
 .ace_editor,
 .ace_editor * {
   transform: scale(1) translateZ(0);
-  transition: none !important;
-  animation: none !important;
+  /*transition: none !important;
+  animation: none !important;*/
 }
 
 .ace_folding-enabled > .ace_gutter-cell,

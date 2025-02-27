@@ -212,12 +212,16 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     if (!vcs) {
       vcs = this.$box[0].querySelectorAll('.io-virtual-content');
       domCache[this.id + this.cid + '.io-virtual-content'] = vcs;
+    } else {
+      console.log('DOMHIT');
     }
 
     let fcs = domCache[this.id + this.cid + '.io-fpga-content'];
     if (!fcs) {
       fcs = this.$box[0].querySelectorAll('.io-fpga-content');
       domCache[this.id + this.cid + '.io-fpga-content'] = fcs;
+    } else {
+      console.log('DOMHIT');
     }
 
     this.nativeDom = {
@@ -268,6 +272,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   applyChoices: function () {
+    console.log('applyChoices');
     var data = this.model.get('data');
     if (data.pins) {
       for (var i in data.pins) {
@@ -280,6 +285,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   applyValues: function () {
+    console.log('ApplyValues');
     this.updating = true;
     var data = this.model.get('data');
     for (var i in data.pins) {
@@ -306,6 +312,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   applyShape: function () {
+    console.log('ApplyShape');
     var data = this.model.get('data');
     var name = data.name + (data.range || '');
     var virtual = data.virtual || this.model.get('disabled') || subModuleActive;
@@ -345,6 +352,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   applyClock: function () {
+    console.log('applyClock');
     if (this.model.get('data').clock) {
       this.$box.find('svg').removeClass('hidden');
     } else {
@@ -353,6 +361,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   clearValues: function () {
+    console.log('clearValues');
     this.updating = true;
     var name = '';
     var value = '0';
@@ -370,6 +379,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   apply: function () {
+    console.log('Apply');
     this.applyChoices();
     this.applyValues();
     this.applyShape();
@@ -378,6 +388,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
 
   update: function () {
+    console.log('update');
     this.renderPorts();
     joint.dia.ElementView.prototype.update.apply(this, arguments);
   },
@@ -385,6 +396,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   pendingRender: false,
   //place:placementCssIOTasks,
   updateBox: function () {
+    console.log('updateBox');
     const size = this.model.get('size');
     this.virtualContentSelector.width(size.width);
     var pendingTasks = [];
@@ -394,6 +406,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
     return this.placeIO(data, bbox, state, pendingTasks);
   },
   removeBox: function () {
+    console.log('removeBox');
     // Close select options on remove
     //MOD this.$box.find('select').select2('close');
     this.$box.remove();

@@ -441,7 +441,9 @@ angular.module('icestudio').service(
       function disableAceEditors() {
         cacheEditors = [];
 
-        cacheEditors = document.querySelectorAll('.ace_editor');
+        cacheEditors.push(...document.querySelectorAll('.ace_editor'));
+        cacheEditors.push(...document.querySelectorAll('.io-block'));
+        console.log(cacheEditors);
         requestAnimationFrame(() => {
           cacheEditors.forEach((editor) => {
             editor.style.display = 'none';
@@ -480,7 +482,6 @@ angular.module('icestudio').service(
         });
       }
       let isOnZoom = false;
-      let panFrameRequested = false;
       let oncePerZoomHook = false;
       this.panAndZoom = svgPanZoom(targetElement.childNodes[2], {
         fit: false,
@@ -502,11 +503,11 @@ angular.module('icestudio').service(
               oncePerZoomHook = true;
               disableAceEditors();
               // Close expanded combo
-              if (
+              /* if (
                 document.activeElement.className === 'select2-search__field'
               ) {
                 $('select').select2('close');
-              }
+              }*/
             }
           }
           //-- Optimization strategy, try to launch a timeout that is deleted
@@ -523,7 +524,7 @@ angular.module('icestudio').service(
               //-- Remove because i link updateCellboxes action to render browser flow
               //-- maintain to remember it and do a window frame time for testing until
               //-- remove it
-              //updateCellBoxes();
+              updateCellBoxes();
             }
           }, 400);
         },
@@ -531,67 +532,64 @@ angular.module('icestudio').service(
           state.pan = newPan;
           graph.trigger('state', state);
 
-          if (!panFrameRequested) {
-            panFrameRequested = true;
-            requestAnimationFrame(() => {
-              updateCellBoxes();
-              panFrameRequested = false;
-            });
-          }
+          // updateCellBoxes();
         },
       });
 
+      let isUpdatingCells = false;
       function updateCellBoxes() {
-        const cells = graph.getCells().filter((cell) => !cell.isLink());
-
-        // Actualizar selectionView solo si cambia
-        if (selectionView.options.state !== state) {
-          selectionView.options.state = state;
-        }
-
-        // Cachear vistas
-        const viewCache = new Map();
-        cells.forEach((cell) =>
-          viewCache.set(cell.id, paper.findViewByModel(cell))
-        );
-
-        graph.startBatch('batch-update');
-
-        let index = 0;
-        const batchSize = 50; // Mantener pequeño por DOM en placementCssIOTasks
-
-        function processBatch() {
-          const startTime = performance.now();
-          const maxTimePerFrame = 8; // 8ms por la manipulación del DOM
-          const end = Math.min(index + batchSize, cells.length);
-          const updates = [];
-
-          // Preparar celdas
-          for (
-            ;
-            index < end && performance.now() - startTime < maxTimePerFrame;
-            index++
-          ) {
-            const cell = cells[index];
-            cell.set('state', state, { silent: true });
-            updates.push(viewCache.get(cell.id));
+        if (!isUpdatingCells) {
+          isUpdatingCells = true;
+          /* jshint ignore:start */
+          const cells = graph.getCells().filter((cell) => !cell.isLink());
+          if (selectionView.options.state !== state) {
+            selectionView.options.state = state;
           }
 
-          // Aplicar actualizaciones en lote
-          updates.forEach((elementView) => {
-            elementView.updateBox(); // Incluye placementCssIOTasks optimizado
-            selectionView.updateBox(elementView.model);
-          });
+          const viewCache = new Map();
+          cells.forEach((cell) =>
+            viewCache.set(cell.id, paper.findViewByModel(cell))
+          );
 
-          if (index < cells.length) {
-            requestAnimationFrame(processBatch);
-          } else {
-            graph.stopBatch('batch-update');
-            graph.trigger('change'); // Forzar renderizado en 2.0.1
+          graph.startBatch('batch-update');
+
+          let index = 0;
+          const batchSize = 50; // Mantener pequeño por DOM en placementCssIOTasks
+
+          function processBatch() {
+            const startTime = performance.now();
+            const maxTimePerFrame = 8; // 8ms por la manipulación del DOM
+            const end = Math.min(index + batchSize, cells.length);
+            const updates = [];
+
+            // Preparar celdas
+            for (
+              ;
+              index < end && performance.now() - startTime < maxTimePerFrame;
+              index++
+            ) {
+              const cell = cells[index];
+              cell.set('state', state, { silent: true });
+              updates.push(viewCache.get(cell.id));
+            }
+
+            // Aplicar actualizaciones en lote
+            updates.forEach((elementView) => {
+              elementView.updateBox(); // Incluye placementCssIOTasks optimizado
+              selectionView.updateBox(elementView.model);
+            });
+
+            if (index < cells.length) {
+              requestAnimationFrame(processBatch);
+            } else {
+              graph.stopBatch('batch-update');
+              graph.trigger('change'); // Forzar renderizado en 2.0.1
+              isUpdatingCells = false;
+            }
           }
+          requestAnimationFrame(processBatch);
+          /* jshint ignore:end */
         }
-
-        requestAnimationFrame(processBatch);
       }
 
       // Events
