@@ -154,7 +154,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
         selectCode += 'class="select2" i="' + i + '">';
         selectCode += '</select>';
 
-        selectScript += '$("#' + comboId + data.pins[i].index + '").select2(';
+        /*    selectScript += '$("#' + comboId + data.pins[i].index + '").select2(';
         selectScript +=
           '{placeholder: "", allowClear: true, dropdownCssClass: "bigdrop",';
         // Match only words that start with the selected search term
@@ -163,7 +163,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
         selectScript += '  params.term = params.term || "";';
         selectScript +=
           '  if (data.text.toUpperCase().indexOf(params.term.toUpperCase()) == 0) { return data; }';
-        selectScript += '  return false; } });';
+        selectScript += '  return false; } });';*/
       }
     }
 
@@ -234,7 +234,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
 
     // Prevent paper from handling pointerdown.
     var self = this;
-    var selector = this.$box.find('.select2');
+    /*MOD var selector = this.$box.find('.select2');
     selector.on('mousedown click', function (event) {
       event.stopPropagation();
     });
@@ -252,6 +252,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
         }
       }
     });
+    */
 
     this.updateBox();
 
@@ -394,7 +395,7 @@ joint.shapes.ice.IOView = joint.shapes.ice.ModelView.extend({
   },
   removeBox: function () {
     // Close select options on remove
-    this.$box.find('select').select2('close');
+    //MOD this.$box.find('select').select2('close');
     this.$box.remove();
   },
 });
