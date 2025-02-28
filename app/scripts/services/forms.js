@@ -752,8 +752,18 @@ angular
         //------------------------------------
         //-- Add a field to the form
         //------------------------------------
-        addField(field) {
-          this.fields.push(field);
+        addField(field, tab = null) {
+          if (tab === null) {
+            this.fields.push(field);
+          } else {
+            if (Array.isArray(this.fields)) {
+              this.fields = {};
+            }
+            if (!this.fields[tab]) {
+              this.fields[tab] = [];
+            }
+            this.fields[tab].push(field);
+          }
         }
 
         //------------------------------------------------------------------
@@ -766,13 +776,25 @@ angular
 
           //-- Read the values from the Form fields
           //-- and insert them into the values array
-          this.fields.forEach((field) => {
-            //-- Read the value from the field
-            let value = field.read();
+          if (Array.isArray(this.fields)) {
+            this.fields.forEach((field) => {
+              //-- Read the value from the field
+              let value = field.read();
 
-            //-- Add the value to the array
-            values.push(value);
-          });
+              //-- Add the value to the array
+              values.push(value);
+            });
+          } else {
+            Object.keys(this.fields).forEach((tab) => {
+              this.fields[tab].forEach((field) => {
+                //-- Read the value from the field
+                let value = field.read();
+
+                //-- Add the value to the array
+                values.push(value);
+              });
+            });
+          }
 
           //-- Return all the values
           return values;
@@ -791,14 +813,41 @@ angular
           //-- Initial tag for the Form
           formHtml.push('<div>');
 
-          //-- Generate the html for all the fields in the form
-          this.fields.forEach((field) => {
-            //-- Create the html code
-            fieldHtml = field.html();
+          if (Array.isArray(this.fields)) {
+            //-- Generate the html for all the fields in the form
+            this.fields.forEach((field) => {
+              //-- Create the html code
+              fieldHtml = field.html();
 
-            //-- Store the html for this Field
-            formHtml.push(fieldHtml);
-          });
+              //-- Store the html for this Field
+              formHtml.push(fieldHtml);
+            });
+          } else {
+            //-- Generate the tabs
+            formHtml.push('<ul class="tabs">');
+            Object.keys(this.fields).forEach((tab, index) => {
+              let activeClass = index === 0 ? 'active' : '';
+              formHtml.push(
+                `<li class="tab-item ${activeClass}" data-tab="${tab}">${tab}</li>`
+              );
+            });
+            formHtml.push('</ul>');
+
+            //-- Generate the html for all the fields in the tab
+            Object.keys(this.fields).forEach((tab, index) => {
+              let activeClass = index === 0 ? 'active' : '';
+              formHtml.push(
+                `<div class="tab-content ${activeClass}" data-content="${tab}">`
+              );
+
+              this.fields[tab].forEach((field) => {
+                fieldHtml = field.html();
+                formHtml.push(fieldHtml);
+              });
+
+              formHtml.push('</div>');
+            });
+          }
 
           //-- Closing tag for the Form
           formHtml.push('</div>');
@@ -828,6 +877,18 @@ angular
             //-- Set the callback for the Candel button:
             //--   Do nothing...
             .set('oncancel', function (/*evt*/) {});
+
+          $(document).on('click', '.tabs .tab-item', function () {
+            const selectedTab = $(this).attr('data-tab');
+
+            $('.tabs .tab-item').removeClass('active');
+            $(this).addClass('active');
+
+            $('.tab-content').removeClass('active').hide();
+            $(`.tab-content[data-content="${selectedTab}"]`)
+              .addClass('active')
+              .show();
+          });
         }
       }
 
@@ -1615,9 +1676,11 @@ angular
             2 //-- Field id
           );
 
-          this.addField(field0);
-          this.addField(field1);
-          this.addField(field2);
+          const modulePortsLabel = gettextCatalog.getString('Module Ports');
+
+          this.addField(field0, modulePortsLabel);
+          this.addField(field1, modulePortsLabel);
+          this.addField(field2, modulePortsLabel);
           let field3 = false;
           let field4 = false;
 
@@ -1633,7 +1696,7 @@ angular
             );
 
             //-- Add the field to the form
-            this.addField(field3);
+            this.addField(field3, modulePortsLabel);
 
             //-- Field 4: InputOutput port names at the right
             field4 = new TextField(
@@ -1643,7 +1706,7 @@ angular
             );
 
             //-- Add the field to the form
-            this.addField(field4);
+            this.addField(field4, modulePortsLabel);
           }
           this.code = '';
           let self = this;
@@ -1705,7 +1768,8 @@ angular
             5
           );
 
-          this.addField(field5);
+          const toolsLabel = gettextCatalog.getString('Tools');
+          this.addField(field5, toolsLabel);
 
           //-- Control the notifications generated by
           //-- the errors when processing the form
