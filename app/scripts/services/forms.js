@@ -1813,6 +1813,8 @@ angular
 
                     // Almacenar el cuerpo del módulo
                     self.code = result.moduleBody;
+
+                    $('[data-tab="Module Ports"]').click();
                   } catch (err) {
                     alertify.error(
                       gettextCatalog.getString(
