@@ -534,16 +534,18 @@ angular
         //--   * value: Default Value for the option
         //--   * selected: If this option is the default
         //--   * label: Text assigned to the option
+        //--   * size: Size of the combobox
         //--
         //--  Returns:
         //--    -A string with the HTML code
         //-------------------------------------------------------------------------
-        constructor(options, label, value, formId) {
+        constructor(options, label, value, formId, size = null) {
           //-- Properties
           this.label = label;
           this.options = options;
           this.value = value;
           this.formId = formId;
+          this.size = size === null ? 'auto' : size;
 
           //-- Html template for building the combobox field
           //-- The parameters are:
@@ -559,7 +561,7 @@ angular
           //--  %ID% : Form identification number
           //--  %OPTIONS%: Array of available options
           this.htmlTemplate = `
-        <div class="form-group">
+        <div class="form-group" style="width:%SIZE%">
           <label style="font-weight:normal">%LABEL%</label>
           <select class="form-control" id="form%ID%">
             %OPTIONS%
@@ -625,6 +627,7 @@ angular
           let html = this.htmlTemplate.replace('%LABEL%', this.label);
           html = html.replace('%ID%', this.formId);
           html = html.replace('%OPTIONS%', opts);
+          html = html.replace('%SIZE%', this.size);
 
           return html;
         }
