@@ -717,15 +717,16 @@ angular
       //-- GRIDFIELD. It represents a grid in a Form
       //---------------------------------------------------------
       class GridField {
-        constructor(cols, formId, data = []) {
+        constructor(formId, className, cols, data) {
           this.cols = cols;
           this.data = data;
           this.tableId = `table${formId}`;
           this.table = null;
+          this.className = className;
 
           //-- Html template for building the grid
           this.htmlTemplate = `
-            <div id="%TABLE_ID%" class="grid-table"></div>
+            <div id="%TABLE_ID%" class="%CLASS_NAME%"></div>
           `;
         }
 
@@ -733,13 +734,15 @@ angular
         //-- Return a string with the HTML code for this grid
         //---------------------------------------------------------
         html() {
-          return this.htmlTemplate.replace('%TABLE_ID%', `${this.tableId}`);
+          return this.htmlTemplate
+            .replace('%TABLE_ID%', `${this.tableId}`)
+            .replace('%CLASS_NAME%', `${this.className}`);
         }
 
         //---------------------------------------------
         init() {
           this.table = jspreadsheet(document.getElementById(this.tableId), {
-            data: [], //this.data,
+            data: this.data,
             columns: this.cols,
             rowDrag: true,
             allowInsertRow: true,
