@@ -971,6 +971,26 @@ angular
           return html;
         }
 
+        init() {
+          if (Array.isArray(this.fields)) {
+            //-- Initialize the fields
+            this.fields.forEach((field) => {
+              if ('init' in field) {
+                field.init();
+              }
+            });
+          } else {
+            //-- Initialize the fields
+            Object.keys(this.fields).forEach((tab) => {
+              this.fields[tab].forEach((field) => {
+                if ('init' in field) {
+                  field.init();
+                }
+              });
+            });
+          }
+        }
+
         //-----------------------------------------------------------------
         //-- Display the Form
         //-- INPUT:
