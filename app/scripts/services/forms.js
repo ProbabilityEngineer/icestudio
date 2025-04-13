@@ -1971,6 +1971,21 @@ angular
           let field7 = new GridField(7, 'ports-table', columns, data);
           this.addField(field7, modulePortsLabel);
 
+          field0.onChange((value) => {
+            updateIOPortsTable(field7.table, value, 'IN');
+          });
+          field1.onChange((value) => {
+            updateIOPortsTable(field7.table, value, 'OUT');
+          });
+          if (allowInoutPorts) {
+            field3.onChange((value) => {
+              updateIOPortsTable(field7.table, value, 'BIDI');
+            });
+            field4.onChange((value) => {
+              updateIOPortsTable(field7.table, value, 'BIDI');
+            });
+          }
+
           let field8 = new ComboboxField(
             options,
             gettextCatalog.getString('Display mode:'), //-- Top message
@@ -2813,5 +2828,74 @@ angular
       this.FormExternalPlugins = FormExternalPlugins;
       this.FormPythonEnv = FormPythonEnv;
       this.FormExternalCollections = FormExternalCollections;
+
+      //------------------------------------------------------------------------
+      //-- Private functions
+      //------------------------------------------------------------------------
+      function updateIOPortsTable(instance, textList, type) {
+        const newNames = textList
+          .split(',')
+          .map((n) => n.trim())
+          .filter((n) => n !== '');
+
+        const defaultRow = ['', 'IN', 0, false, false, true];
+        const data = instance.getData();
+
+        const nameToRowIndex = new Map();
+        const usedIndexes = new Set();
+
+        data.forEach((row, index) => {
+          const name = row[0];
+          if (name) {
+            nameToRowIndex.set(name, index);
+          }
+        });
+
+        newNames.forEach((name) => {
+          if (nameToRowIndex.has(name)) {
+            const i = nameToRowIndex.get(name);
+            const row = instance.getData()[i];
+            if (row[1] !== type) {
+              instance.setValueFromCoords(1, i, type);
+            }
+            usedIndexes.add(i);
+          } else {
+            let reused = false;
+            for (let i = 0; i < data.length; i++) {
+              const [existingName, existingType] = data[i];
+              if (
+                existingType === type &&
+                !newNames.includes(existingName) &&
+                !usedIndexes.has(i) &&
+                existingName
+              ) {
+                instance.setValueFromCoords(0, i, name);
+                usedIndexes.add(i);
+                reused = true;
+                break;
+              }
+            }
+            if (!reused) {
+              instance.insertRow([name, type, 0, false, false, true]);
+            }
+          }
+        });
+
+        for (let i = instance.getData().length - 1; i >= 0; i--) {
+          const [name, rowType] = instance.getData()[i];
+          if (rowType === type && name && !newNames.includes(name)) {
+            instance.deleteRow(i);
+          }
+        }
+
+        const updated = instance.getData();
+        for (let i = updated.length - 1; i >= 0; i--) {
+          if (!updated[i][0]) {
+            instance.deleteRow(i);
+          }
+        }
+
+        instance.insertRow([...defaultRow]);
+      }
     }
   );
