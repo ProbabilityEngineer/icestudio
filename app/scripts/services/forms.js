@@ -999,16 +999,24 @@ angular
         display(callback) {
           //-- Create the HTML
           let html = this.html();
-          //-- Display the Form
-          alertify
-            .confirm(html)
+          const self = this;
 
-            //-- Set the callback for the OK button
-            .set('onok', callback)
+          const dialog = alertify.confirm();
+          dialog.setContent(html);
 
-            //-- Set the callback for the Candel button:
-            //--   Do nothing...
-            .set('oncancel', function (/*evt*/) {});
+          //-- Set the callback for the OK button
+          dialog.set('onok', callback);
+
+          //-- Set the callback for the Cancel button:
+          //--   Do nothing...
+          dialog.set('oncancel', function (/*evt*/) {});
+
+          //-- Set the callback for the show event:
+          dialog.set('onshow', function () {
+            self.init();
+          });
+
+          dialog.show();
 
           $(document).on('click', '.tabs .tab-item', function () {
             const selectedTab = $(this).attr('data-tab');
