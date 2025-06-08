@@ -1966,7 +1966,7 @@ angular
             { type: 'checkbox', title: 'Registered', width: 80 },
             { type: 'checkbox', title: 'Enable', width: 60 },
           ];
-          const data = [['', 'IN', 0, false, false, true]];
+          const data = [['', 'IN', 1, false, false, true]];
 
           let field7 = new GridField(7, 'ports-table', columns, data);
           this.addField(field7, modulePortsLabel);
@@ -2833,12 +2833,23 @@ angular
       //-- Private functions
       //------------------------------------------------------------------------
       function updateIOPortsTable(instance, textList, type) {
-        const newNames = textList
+        const parsedNames = textList
           .split(',')
-          .map((n) => n.trim())
-          .filter((n) => n !== '');
+          .map((n) => {
+            const trimmed = n.trim();
+            const match = trimmed.match(/^(\w+)\[(\d+):(\d+)\]$/);
+            if (match) {
+              const name = match[1];
+              const msb = parseInt(match[2], 10);
+              const lsb = parseInt(match[3], 10);
+              const busWidth = Math.abs(msb - lsb) + 1;
+              return { name, busWidth };
+            }
+            return { name: trimmed, busWidth: 1 };
+          })
+          .filter(({ name }) => name !== '');
 
-        const defaultRow = ['', 'IN', 0, false, false, true];
+        const defaultRow = ['', 'IN', 1, false, false, true];
         const data = instance.getData();
 
         const nameToRowIndex = new Map();
@@ -2851,12 +2862,16 @@ angular
           }
         });
 
-        newNames.forEach((name) => {
+        const newNames = parsedNames.map((p) => p.name);
+        parsedNames.forEach(({ name, busWidth }) => {
           if (nameToRowIndex.has(name)) {
             const i = nameToRowIndex.get(name);
             const row = instance.getData()[i];
             if (row[1] !== type) {
               instance.setValueFromCoords(1, i, type);
+            }
+            if (row[2] !== busWidth) {
+              instance.setValueFromCoords(2, i, busWidth);
             }
             usedIndexes.add(i);
           } else {
@@ -2870,13 +2885,14 @@ angular
                 existingName
               ) {
                 instance.setValueFromCoords(0, i, name);
+                instance.setValueFromCoords(2, i, busWidth);
                 usedIndexes.add(i);
                 reused = true;
                 break;
               }
             }
             if (!reused) {
-              instance.insertRow([name, type, 0, false, false, true]);
+              instance.insertRow([name, type, busWidth, false, false, true]);
             }
           }
         });
