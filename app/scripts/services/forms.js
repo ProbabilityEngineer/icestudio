@@ -2836,16 +2836,23 @@ angular
         const parsedNames = textList
           .split(',')
           .map((n) => {
-            const trimmed = n.trim();
+            let trimmed = n.trim();
+            let signed = false;
+
+            if (trimmed.startsWith('@')) {
+              signed = true;
+              trimmed = trimmed.slice(1);
+            }
+
             const match = trimmed.match(/^(\w+)\[(\d+):(\d+)\]$/);
             if (match) {
               const name = match[1];
               const msb = parseInt(match[2], 10);
               const lsb = parseInt(match[3], 10);
               const busWidth = Math.abs(msb - lsb) + 1;
-              return { name, busWidth };
+              return { name, busWidth, signed };
             }
-            return { name: trimmed, busWidth: 1 };
+            return { name: trimmed, busWidth: 1, signed };
           })
           .filter(({ name }) => name !== '');
 
@@ -2863,7 +2870,7 @@ angular
         });
 
         const newNames = parsedNames.map((p) => p.name);
-        parsedNames.forEach(({ name, busWidth }) => {
+        parsedNames.forEach(({ name, busWidth, signed }) => {
           if (nameToRowIndex.has(name)) {
             const i = nameToRowIndex.get(name);
             const row = instance.getData()[i];
@@ -2873,6 +2880,7 @@ angular
             if (row[2] !== busWidth) {
               instance.setValueFromCoords(2, i, busWidth);
             }
+            instance.setValueFromCoords(3, i, signed);
             usedIndexes.add(i);
           } else {
             let reused = false;
@@ -2886,13 +2894,14 @@ angular
               ) {
                 instance.setValueFromCoords(0, i, name);
                 instance.setValueFromCoords(2, i, busWidth);
+                instance.setValueFromCoords(3, i, signed);
                 usedIndexes.add(i);
                 reused = true;
                 break;
               }
             }
             if (!reused) {
-              instance.insertRow([name, type, busWidth, false, false, true]);
+              instance.insertRow([name, type, busWidth, signed, false, true]);
             }
           }
         });
