@@ -2889,13 +2889,20 @@ angular
         }
 
         const updated = instance.getData();
+        let hasEmptyRow = false;
+
         for (let i = updated.length - 1; i >= 0; i--) {
-          if (!updated[i][0]) {
+          const length = instance.getData().length;
+          if (!updated[i][0] && length > 1) {
             instance.deleteRow(i);
+          } else if (!updated[i][0]) {
+            hasEmptyRow = true;
           }
         }
 
-        instance.insertRow([...defaultRow]);
+        if (!hasEmptyRow) {
+          instance.insertRow([...defaultRow]);
+        }
       }
     }
   );
