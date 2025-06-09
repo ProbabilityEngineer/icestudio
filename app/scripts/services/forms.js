@@ -766,6 +766,7 @@ angular
             allowManualInsertRow: false,
             tableOverflow: true,
             tableHeight: '200px',
+            contextMenu: false,
           });
         }
 
@@ -1954,11 +1955,11 @@ angular
           ];
 
           const columns = [
-            { type: 'text', title: 'Name', width: 150 },
+            { type: 'text', title: 'Name', width: 140 },
             {
               type: 'dropdown',
               title: 'Type',
-              width: 70,
+              width: 80,
               source: ['IN', 'OUT', 'BIDI'],
             },
             { type: 'numeric', title: 'Bus width', width: 80 },
