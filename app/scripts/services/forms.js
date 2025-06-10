@@ -786,7 +786,7 @@ angular
           if (editor) {
             editor.blur();
             if (typeof this.onEnter === 'function') {
-              this.onEnter();
+              this.onEnter(this);
             }
             return false;
           }
@@ -2879,10 +2879,11 @@ angular
       //------------------------------------------------------------------------
       //-- Private functions
       //------------------------------------------------------------------------
-      function onEnterIOPortsTable() {
-        const [col, row] = this.table.selectedCell || [];
-        const data = this.table.getData();
-        const rowData = this.table.getRowData(row);
+      function onEnterIOPortsTable(self) {
+        const coords = self.table.selectedCell || [];
+        const row = coords[0] || 0;
+        const data = self.table.getData();
+        const rowData = self.table.getRowData(row);
         const name = rowData[0];
         const totalRows = data.length;
 
@@ -2893,17 +2894,17 @@ angular
           const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
 
           if (otherEmptyRowExists || totalRows > 1) {
-            this.table.deleteRow(row);
+            self.table.deleteRow(row);
 
-            const stillHasEmptyRow = this.table.getData().some((r) => !r[0]);
+            const stillHasEmptyRow = self.table.getData().some((r) => !r[0]);
             if (!stillHasEmptyRow) {
-              this.table.insertRow([...defaultRow]);
+              self.table.insertRow([...defaultRow]);
             }
           }
         } else {
           const hasEmptyRow = data.some((r) => !r[0]);
           if (!hasEmptyRow) {
-            this.table.insertRow([...defaultRow]);
+            self.table.insertRow([...defaultRow]);
           }
         }
       }
