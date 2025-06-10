@@ -777,6 +777,17 @@ angular
         read() {
           return this.table.getData();
         }
+
+        allowEnter() {
+          const editor = document.querySelector(
+            `#${this.tableId} .editor input`
+          );
+          if (editor) {
+            editor.blur();
+            return false;
+          }
+          return true;
+        }
       }
 
       class Form {
@@ -1024,7 +1035,37 @@ angular
           dialog.setContent(html);
 
           //-- Set the callback for the OK button
-          dialog.set('onok', callback);
+          dialog.set('onok', function (evt) {
+            let allow = true;
+
+            if (Array.isArray(self.fields)) {
+              self.fields.forEach((field) => {
+                if (
+                  typeof field.allowEnter === 'function' &&
+                  !field.allowEnter()
+                ) {
+                  allow = false;
+                }
+              });
+            } else {
+              Object.keys(self.fields).forEach((tab) => {
+                self.fields[tab].forEach((field) => {
+                  if (
+                    typeof field.allowEnter === 'function' &&
+                    !field.allowEnter()
+                  ) {
+                    allow = false;
+                  }
+                });
+              });
+            }
+
+            if (allow) {
+              callback(evt);
+            } else {
+              evt.cancel = true;
+            }
+          });
 
           //-- Set the callback for the Cancel button:
           //--   Do nothing...
