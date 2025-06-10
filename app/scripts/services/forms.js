@@ -738,6 +738,7 @@ angular
           this.tableId = `table${formId}`;
           this.table = null;
           this.className = className;
+          this.onEnter = null;
 
           //-- Html template for building the grid
           this.htmlTemplate = `
@@ -784,6 +785,9 @@ angular
           );
           if (editor) {
             editor.blur();
+            if (typeof this.onEnter === 'function') {
+              this.onEnter();
+            }
             return false;
           }
           return true;
