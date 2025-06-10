@@ -2015,6 +2015,7 @@ angular
           const data = [['', 'IN', 1, false, false, true]];
 
           let field7 = new GridField(7, 'ports-table', columns, data);
+          field7.onEnter = onEnterIOPortsTable;
           this.addField(field7, modulePortsLabel);
 
           field0.onChange((value) => {
@@ -2878,6 +2879,35 @@ angular
       //------------------------------------------------------------------------
       //-- Private functions
       //------------------------------------------------------------------------
+      function onEnterIOPortsTable() {
+        const [col, row] = this.table.selectedCell || [];
+        const data = this.table.getData();
+        const rowData = this.table.getRowData(row);
+        const name = rowData[0];
+        const totalRows = data.length;
+
+        const isEmpty = !name;
+        const defaultRow = ['', 'IN', 1, false, false, true];
+
+        if (isEmpty) {
+          const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
+
+          if (otherEmptyRowExists || totalRows > 1) {
+            this.table.deleteRow(row);
+
+            const stillHasEmptyRow = this.table.getData().some((r) => !r[0]);
+            if (!stillHasEmptyRow) {
+              this.table.insertRow([...defaultRow]);
+            }
+          }
+        } else {
+          const hasEmptyRow = data.some((r) => !r[0]);
+          if (!hasEmptyRow) {
+            this.table.insertRow([...defaultRow]);
+          }
+        }
+      }
+
       function updateIOPortsTable(instance, textList, type) {
         const parsedNames = textList
           .split(',')
