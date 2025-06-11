@@ -127,7 +127,7 @@ angular
         //---------------------------------------------
         write(value) {
           //-- Write the value to the DOM
-          $(`#form${this.formId}`).val(value);
+          $(`#form${this.formId}`).val(value).trigger('input');
         }
 
         //------------------------------------------------
@@ -738,6 +738,7 @@ angular
           this.tableId = `table${formId}`;
           this.table = null;
           this.className = className;
+          this.onEnter = null;
 
           //-- Html template for building the grid
           this.htmlTemplate = `
@@ -766,6 +767,12 @@ angular
             allowManualInsertRow: false,
             tableOverflow: true,
             tableHeight: '200px',
+            contextMenu: false,
+            onchange: () => {
+              if (typeof this.onEnter === 'function') {
+                this.onEnter(this);
+              }
+            },
           });
         }
 
@@ -775,6 +782,20 @@ angular
         //---------------------------------------------
         read() {
           return this.table.getData();
+        }
+
+        allowEnter() {
+          const editor = document.querySelector(
+            `#${this.tableId} .editor input`
+          );
+          if (editor) {
+            editor.blur();
+            if (typeof this.onEnter === 'function') {
+              this.onEnter(this);
+            }
+            return false;
+          }
+          return true;
         }
       }
 
@@ -1023,7 +1044,37 @@ angular
           dialog.setContent(html);
 
           //-- Set the callback for the OK button
-          dialog.set('onok', callback);
+          dialog.set('onok', function (evt) {
+            let allow = true;
+
+            if (Array.isArray(self.fields)) {
+              self.fields.forEach((field) => {
+                if (
+                  typeof field.allowEnter === 'function' &&
+                  !field.allowEnter()
+                ) {
+                  allow = false;
+                }
+              });
+            } else {
+              Object.keys(self.fields).forEach((tab) => {
+                self.fields[tab].forEach((field) => {
+                  if (
+                    typeof field.allowEnter === 'function' &&
+                    !field.allowEnter()
+                  ) {
+                    allow = false;
+                  }
+                });
+              });
+            }
+
+            if (allow) {
+              callback(evt);
+            } else {
+              evt.cancel = true;
+            }
+          });
 
           //-- Set the callback for the Cancel button:
           //--   Do nothing...
@@ -1954,11 +2005,11 @@ angular
           ];
 
           const columns = [
-            { type: 'text', title: 'Name', width: 150 },
+            { type: 'text', title: 'Name', width: 140 },
             {
               type: 'dropdown',
               title: 'Type',
-              width: 70,
+              width: 80,
               source: ['IN', 'OUT', 'BIDI'],
             },
             { type: 'numeric', title: 'Bus width', width: 80 },
@@ -1966,9 +2017,10 @@ angular
             { type: 'checkbox', title: 'Registered', width: 80 },
             { type: 'checkbox', title: 'Enable', width: 60 },
           ];
-          const data = [['', 'IN', 0, false, false, true]];
+          const data = [['', 'IN', 1, false, false, true]];
 
           let field7 = new GridField(7, 'ports-table', columns, data);
+          field7.onEnter = onEnterIOPortsTable;
           this.addField(field7, modulePortsLabel);
 
           field0.onChange((value) => {
@@ -2832,13 +2884,104 @@ angular
       //------------------------------------------------------------------------
       //-- Private functions
       //------------------------------------------------------------------------
-      function updateIOPortsTable(instance, textList, type) {
-        const newNames = textList
-          .split(',')
-          .map((n) => n.trim())
-          .filter((n) => n !== '');
+      function onEnterIOPortsTable(self) {
+        const grouped = {
+          IN: [],
+          OUT: [],
+          BIDI: [],
+        };
 
-        const defaultRow = ['', 'IN', 0, false, false, true];
+        self.table.getData().forEach((row) => {
+          const enabled = row[5] !== false;
+          if (!enabled) {
+            return;
+          }
+          let name = row[0]?.trim();
+          const type = row[1]?.toUpperCase();
+          const busWidth = parseInt(row[2], 10);
+          const signed = row[3] === true;
+
+          if (!name || !type) {
+            return;
+          }
+
+          if (!isNaN(busWidth) && busWidth > 1) {
+            name += `[${busWidth - 1}:0]`;
+          }
+
+          if (signed) {
+            name = `@${name}`;
+          }
+
+          if (grouped[type]) {
+            grouped[type].push(name);
+          }
+        });
+
+        const inInput = document.querySelector('#form0');
+        const outInput = document.querySelector('#form1');
+        const bidiInput1 = document.querySelector('#form3');
+        const bidiInput2 = document.querySelector('#form4');
+
+        inInput.value = grouped.IN.join(', ');
+        outInput.value = grouped.OUT.join(', ');
+        bidiInput1.value = grouped.BIDI.join(', ');
+        bidiInput2.value = grouped.BIDI.join(', ');
+
+        const coords = self.table.selectedCell || [];
+        const row = coords[1] || 0;
+        const data = self.table.getData();
+        const rowData = self.table.getRowData(row);
+        const name = rowData[0];
+        const totalRows = data.length;
+
+        const isEmpty = !name;
+        const defaultRow = ['', 'IN', 1, false, false, true];
+
+        if (isEmpty) {
+          const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
+
+          if (otherEmptyRowExists || totalRows > 1) {
+            self.table.deleteRow(row);
+
+            const stillHasEmptyRow = self.table.getData().some((r) => !r[0]);
+            if (!stillHasEmptyRow) {
+              self.table.insertRow([...defaultRow]);
+            }
+          }
+        } else {
+          const hasEmptyRow = data.some((r) => !r[0]);
+          if (!hasEmptyRow) {
+            self.table.insertRow([...defaultRow]);
+          }
+        }
+      }
+
+      function updateIOPortsTable(instance, textList, type) {
+        const parsedNames = textList
+          .split(',')
+          .map((n) => {
+            let trimmed = n.trim();
+            let signed = false;
+
+            if (trimmed.startsWith('@')) {
+              signed = true;
+              trimmed = trimmed.slice(1);
+            }
+
+            const match = trimmed.match(/^(\w+)\[(\d+):(\d+)\]$/);
+            if (match) {
+              const name = match[1];
+              const msb = parseInt(match[2], 10);
+              const lsb = parseInt(match[3], 10);
+              const busWidth = Math.abs(msb - lsb) + 1;
+              return { name, busWidth, signed };
+            }
+            return { name: trimmed, busWidth: 1, signed };
+          })
+          .filter(({ name }) => name !== '');
+
+        const defaultRow = ['', 'IN', 1, false, false, true];
         const data = instance.getData();
 
         const nameToRowIndex = new Map();
@@ -2851,13 +2994,18 @@ angular
           }
         });
 
-        newNames.forEach((name) => {
+        const newNames = parsedNames.map((p) => p.name);
+        parsedNames.forEach(({ name, busWidth, signed }) => {
           if (nameToRowIndex.has(name)) {
             const i = nameToRowIndex.get(name);
             const row = instance.getData()[i];
             if (row[1] !== type) {
               instance.setValueFromCoords(1, i, type);
             }
+            if (row[2] !== busWidth) {
+              instance.setValueFromCoords(2, i, busWidth);
+            }
+            instance.setValueFromCoords(3, i, signed);
             usedIndexes.add(i);
           } else {
             let reused = false;
@@ -2870,13 +3018,15 @@ angular
                 existingName
               ) {
                 instance.setValueFromCoords(0, i, name);
+                instance.setValueFromCoords(2, i, busWidth);
+                instance.setValueFromCoords(3, i, signed);
                 usedIndexes.add(i);
                 reused = true;
                 break;
               }
             }
             if (!reused) {
-              instance.insertRow([name, type, 0, false, false, true]);
+              instance.insertRow([name, type, busWidth, signed, false, true]);
             }
           }
         });
@@ -2889,13 +3039,20 @@ angular
         }
 
         const updated = instance.getData();
+        let hasEmptyRow = false;
+
         for (let i = updated.length - 1; i >= 0; i--) {
-          if (!updated[i][0]) {
+          const length = instance.getData().length;
+          if (!updated[i][0] && length > 1) {
             instance.deleteRow(i);
+          } else if (!updated[i][0]) {
+            hasEmptyRow = true;
           }
         }
 
-        instance.insertRow([...defaultRow]);
+        if (!hasEmptyRow) {
+          instance.insertRow([...defaultRow]);
+        }
       }
     }
   );

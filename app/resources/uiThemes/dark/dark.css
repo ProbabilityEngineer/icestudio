@@ -980,3 +980,16 @@
   border-color: #666;
   color: white;
 }
+
+.jexcel_container .highlight {
+  border: none !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
+  padding-top: 0 !important;
+
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
