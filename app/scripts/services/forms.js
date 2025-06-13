@@ -951,6 +951,32 @@ angular
           return values;
         }
 
+        //------------------------------------------------------
+        //-- Read a specific field from the form by its index
+        //-- Input: The index of the field to read
+        //-- Returns:
+        //--  - The value of the field at the given index
+        //--  - undefined if the index is invalid
+        //------------------------------------------------------
+        readField(index) {
+          if (Array.isArray(this.fields)) {
+            //-- Get the field at the given index
+            const field = this.fields[index];
+
+            //-- Return the field value (if exists)
+            return field ? field.read() : undefined;
+          } else {
+            //-- The form is organized into tabs (object of arrays)
+            const flatFields = Object.values(this.fields).flat();
+
+            //-- Get the field at the given index
+            const field = flatFields[index];
+
+            //-- Return the field value (if exists)
+            return field ? field.read() : undefined;
+          }
+        }
+
         //-------------------------------------
         //-- Generate the HTML of the form
         //-------------------------------------
