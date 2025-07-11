@@ -2046,7 +2046,7 @@ angular
           const data = [['', 'IN', 1, false, false, true]];
 
           let field7 = new GridField(7, 'ports-table', columns, data);
-          field7.onEnter = this.onEnterIOPortsTable;
+          field7.onEnter = () => this.onEnterIOPortsTable(field7.table);
           this.addField(field7, modulePortsLabel);
 
           field0.onChange((value) => {
@@ -2088,6 +2088,19 @@ angular
             this.iniPortsInOutLeft = portsInOutLeft;
             this.iniPortsInOutRight = portsInOutRight;
           }
+
+          this.inInput = Array.isArray(this.fields)
+            ? this.fields[0]
+            : this.fields[modulePortsLabel][0];
+          this.outInput = Array.isArray(this.fields)
+            ? this.fields[1]
+            : this.fields[modulePortsLabel][1];
+          this.bidiInput1 = Array.isArray(this.fields)
+            ? this.fields[3]
+            : this.fields[modulePortsLabel][3];
+          this.bidiInput2 = Array.isArray(this.fields)
+            ? this.fields[4]
+            : this.fields[modulePortsLabel][4];
         }
 
         //-----------------------------------------------------------------------
@@ -2290,14 +2303,14 @@ angular
           return changed;
         }
 
-        onEnterIOPortsTable(self) {
+        onEnterIOPortsTable(table) {
           const grouped = {
             IN: [],
             OUT: [],
             BIDI: [],
           };
 
-          self.table.getData().forEach((row) => {
+          table.getData().forEach((row) => {
             const enabled = row[5] !== false;
             if (!enabled) {
               return;
@@ -2323,16 +2336,14 @@ angular
               grouped[type].push(name);
             }
           });
-
-          const inInput = document.querySelector('#form0');
-          const outInput = document.querySelector('#form1');
-          const bidiInput1 = document.querySelector('#form3');
-          const bidiInput2 = document.querySelector('#form4');
-
-          inInput.value = grouped.IN.join(', ');
-          outInput.value = grouped.OUT.join(', ');
-          bidiInput1.value = grouped.BIDI.join(', ');
-          bidiInput2.value = grouped.BIDI.join(', ');
+          this.inInput.write(grouped.IN.join(', '));
+          this.outInput.write(grouped.OUT.join(', '));
+          if (this.hasOwnProperty('inoutLeftPorts')) {
+            this.bidiInput1.write(grouped.BIDI.join(', '));
+          }
+          if (this.hasOwnProperty('inoutRightPorts')) {
+            this.bidiInput2.write(grouped.BIDI.join(', '));
+          }
 
           const coords = self.table.selectedCell || [];
           const row = coords[1] || 0;
@@ -2348,17 +2359,17 @@ angular
             const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
 
             if (otherEmptyRowExists || totalRows > 1) {
-              self.table.deleteRow(row);
+              table.deleteRow(row);
 
-              const stillHasEmptyRow = self.table.getData().some((r) => !r[0]);
+              const stillHasEmptyRow = table.getData().some((r) => !r[0]);
               if (!stillHasEmptyRow) {
-                self.table.insertRow([...defaultRow]);
+                table.insertRow([...defaultRow]);
               }
             }
           } else {
             const hasEmptyRow = data.some((r) => !r[0]);
             if (!hasEmptyRow) {
-              self.table.insertRow([...defaultRow]);
+              table.insertRow([...defaultRow]);
             }
           }
         }
