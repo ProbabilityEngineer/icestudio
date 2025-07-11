@@ -1888,6 +1888,9 @@ angular
           //-- Create a blank Form (calling the upper Class)
           super();
 
+          this._updatingFromText = false;
+          this._updatingFromGrid = false;
+
           //--- Add the different Fields:
 
           //-- Field 0: Input port names
@@ -2050,17 +2053,37 @@ angular
           this.addField(field7, modulePortsLabel);
 
           field0.onChange((value) => {
+            if (this._updatingFromGrid) {
+              return;
+            }
+            this._updatingFromText = true;
             this.updateIOPortsTable(field7.table, value, 'IN');
+            this._updatingFromText = false;
           });
           field1.onChange((value) => {
+            if (this._updatingFromGrid) {
+              return;
+            }
+            this._updatingFromText = true;
             this.updateIOPortsTable(field7.table, value, 'OUT');
+            this._updatingFromText = false;
           });
           if (allowInoutPorts) {
             field3.onChange((value) => {
+              if (this._updatingFromGrid) {
+                return;
+              }
+              this._updatingFromText = true;
               this.updateIOPortsTable(field7.table, value, 'BIDI');
+              this._updatingFromText = false;
             });
             field4.onChange((value) => {
+              if (this._updatingFromGrid) {
+                return;
+              }
+              this._updatingFromText = true;
               this.updateIOPortsTable(field7.table, value, 'BIDI');
+              this._updatingFromText = false;
             });
           }
 
@@ -2304,6 +2327,10 @@ angular
         }
 
         onEnterIOPortsTable(table) {
+          if (this._updatingFromText) {
+            return;
+          }
+
           const grouped = {
             IN: [],
             OUT: [],
@@ -2336,6 +2363,8 @@ angular
               grouped[type].push(name);
             }
           });
+
+          this._updatingFromGrid = true;
           this.inInput.write(grouped.IN.join(', '));
           this.outInput.write(grouped.OUT.join(', '));
           if (this.hasOwnProperty('inoutLeftPorts')) {
@@ -2344,6 +2373,7 @@ angular
           if (this.hasOwnProperty('inoutRightPorts')) {
             this.bidiInput2.write(grouped.BIDI.join(', '));
           }
+          this._updatingFromGrid = false;
 
           const coords = table.selectedCell || [];
           const row = coords[1] || 0;
