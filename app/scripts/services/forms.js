@@ -951,6 +951,32 @@ angular
           return values;
         }
 
+        //------------------------------------------------------
+        //-- Read a specific field from the form by its index
+        //-- Input: The index of the field to read
+        //-- Returns:
+        //--  - The value of the field at the given index
+        //--  - undefined if the index is invalid
+        //------------------------------------------------------
+        readField(index) {
+          if (Array.isArray(this.fields)) {
+            //-- Get the field at the given index
+            const field = this.fields[index];
+
+            //-- Return the field value (if exists)
+            return field ? field.read() : undefined;
+          } else {
+            //-- The form is organized into tabs (object of arrays)
+            const flatFields = Object.values(this.fields).flat();
+
+            //-- Get the field at the given index
+            const field = flatFields[index];
+
+            //-- Return the field value (if exists)
+            return field ? field.read() : undefined;
+          }
+        }
+
         //-------------------------------------
         //-- Generate the HTML of the form
         //-------------------------------------
@@ -1862,6 +1888,9 @@ angular
           //-- Create a blank Form (calling the upper Class)
           super();
 
+          this._updatingFromText = false;
+          this._updatingFromGrid = false;
+
           //--- Add the different Fields:
 
           //-- Field 0: Input port names
@@ -2020,21 +2049,41 @@ angular
           const data = [['', 'IN', 1, false, false, true]];
 
           let field7 = new GridField(7, 'ports-table', columns, data);
-          field7.onEnter = onEnterIOPortsTable;
+          field7.onEnter = () => this.onEnterIOPortsTable(field7.table);
           this.addField(field7, modulePortsLabel);
 
           field0.onChange((value) => {
-            updateIOPortsTable(field7.table, value, 'IN');
+            if (this._updatingFromGrid) {
+              return;
+            }
+            this._updatingFromText = true;
+            this.updateIOPortsTable(field7.table, value, 'IN');
+            this._updatingFromText = false;
           });
           field1.onChange((value) => {
-            updateIOPortsTable(field7.table, value, 'OUT');
+            if (this._updatingFromGrid) {
+              return;
+            }
+            this._updatingFromText = true;
+            this.updateIOPortsTable(field7.table, value, 'OUT');
+            this._updatingFromText = false;
           });
           if (allowInoutPorts) {
             field3.onChange((value) => {
-              updateIOPortsTable(field7.table, value, 'BIDI');
+              if (this._updatingFromGrid) {
+                return;
+              }
+              this._updatingFromText = true;
+              this.updateIOPortsTable(field7.table, value, 'BIDI');
+              this._updatingFromText = false;
             });
             field4.onChange((value) => {
-              updateIOPortsTable(field7.table, value, 'BIDI');
+              if (this._updatingFromGrid) {
+                return;
+              }
+              this._updatingFromText = true;
+              this.updateIOPortsTable(field7.table, value, 'BIDI');
+              this._updatingFromText = false;
             });
           }
 
@@ -2062,6 +2111,19 @@ angular
             this.iniPortsInOutLeft = portsInOutLeft;
             this.iniPortsInOutRight = portsInOutRight;
           }
+
+          this.inInput = Array.isArray(this.fields)
+            ? this.fields[0]
+            : this.fields[modulePortsLabel][0];
+          this.outInput = Array.isArray(this.fields)
+            ? this.fields[1]
+            : this.fields[modulePortsLabel][1];
+          this.bidiInput1 = Array.isArray(this.fields)
+            ? this.fields[3]
+            : this.fields[modulePortsLabel][3];
+          this.bidiInput2 = Array.isArray(this.fields)
+            ? this.fields[4]
+            : this.fields[modulePortsLabel][4];
         }
 
         //-----------------------------------------------------------------------
@@ -2262,6 +2324,182 @@ angular
 
           //-- Return a boolean value
           return changed;
+        }
+
+        onEnterIOPortsTable(table) {
+          if (this._updatingFromText) {
+            return;
+          }
+
+          const grouped = {
+            IN: [],
+            OUT: [],
+            BIDI: [],
+          };
+
+          table.getData().forEach((row) => {
+            const enabled = row[5] !== false;
+            if (!enabled) {
+              return;
+            }
+            let name = row[0]?.trim();
+            const type = row[1]?.toUpperCase();
+            const busWidth = parseInt(row[2], 10);
+            const signed = row[3] === true;
+
+            if (!name || !type) {
+              return;
+            }
+
+            if (!isNaN(busWidth) && busWidth > 1) {
+              name += `[${busWidth - 1}:0]`;
+            }
+
+            if (signed) {
+              name = `@${name}`;
+            }
+
+            if (grouped[type]) {
+              grouped[type].push(name);
+            }
+          });
+
+          this._updatingFromGrid = true;
+          this.inInput.write(grouped.IN.join(', '));
+          this.outInput.write(grouped.OUT.join(', '));
+          if (this.hasOwnProperty('inoutLeftPorts')) {
+            this.bidiInput1.write(grouped.BIDI.join(', '));
+          }
+          if (this.hasOwnProperty('inoutRightPorts')) {
+            this.bidiInput2.write(grouped.BIDI.join(', '));
+          }
+          this._updatingFromGrid = false;
+
+          const coords = table.selectedCell || [];
+          const row = coords[1] || 0;
+          const data = table.getData();
+          const rowData = table.getRowData(row);
+          const name = rowData[0];
+          const totalRows = data.length;
+
+          const isEmpty = !name;
+          const defaultRow = ['', 'IN', 1, false, false, true];
+
+          if (isEmpty) {
+            const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
+
+            if (otherEmptyRowExists || totalRows > 1) {
+              table.deleteRow(row);
+
+              const stillHasEmptyRow = table.getData().some((r) => !r[0]);
+              if (!stillHasEmptyRow) {
+                table.insertRow([...defaultRow]);
+              }
+            }
+          } else {
+            const hasEmptyRow = data.some((r) => !r[0]);
+            if (!hasEmptyRow) {
+              table.insertRow([...defaultRow]);
+            }
+          }
+        }
+
+        updateIOPortsTable(instance, textList, type) {
+          const parsedNames = textList
+            .split(',')
+            .map((n) => {
+              let trimmed = n.trim();
+              let signed = false;
+
+              if (trimmed.startsWith('@')) {
+                signed = true;
+                trimmed = trimmed.slice(1);
+              }
+
+              const match = trimmed.match(/^(\w+)\[(\d+):(\d+)\]$/);
+              if (match) {
+                const name = match[1];
+                const msb = parseInt(match[2], 10);
+                const lsb = parseInt(match[3], 10);
+                const busWidth = Math.abs(msb - lsb) + 1;
+                return { name, busWidth, signed };
+              }
+              return { name: trimmed, busWidth: 1, signed };
+            })
+            .filter(({ name }) => name !== '');
+
+          const defaultRow = ['', 'IN', 1, false, false, true];
+          const data = instance.getData();
+
+          const nameToRowIndex = new Map();
+          const usedIndexes = new Set();
+
+          data.forEach((row, index) => {
+            const name = row[0];
+            if (name) {
+              nameToRowIndex.set(name, index);
+            }
+          });
+
+          const newNames = parsedNames.map((p) => p.name);
+          parsedNames.forEach(({ name, busWidth, signed }) => {
+            if (nameToRowIndex.has(name)) {
+              const i = nameToRowIndex.get(name);
+              const row = instance.getData()[i];
+              if (row[1] !== type) {
+                instance.setValueFromCoords(1, i, type);
+              }
+              if (row[2] !== busWidth) {
+                instance.setValueFromCoords(2, i, busWidth);
+              }
+              instance.setValueFromCoords(3, i, signed);
+              usedIndexes.add(i);
+            } else {
+              let reused = false;
+              for (let i = 0; i < data.length; i++) {
+                const [existingName, existingType] = data[i];
+                if (
+                  existingType === type &&
+                  !newNames.includes(existingName) &&
+                  !usedIndexes.has(i) &&
+                  existingName
+                ) {
+                  instance.setValueFromCoords(0, i, name);
+                  instance.setValueFromCoords(2, i, busWidth);
+                  instance.setValueFromCoords(3, i, signed);
+                  usedIndexes.add(i);
+                  reused = true;
+                  break;
+                }
+              }
+              if (!reused) {
+                instance.insertRow([name, type, busWidth, signed, false, true]);
+              }
+            }
+          });
+
+          for (let i = instance.getData().length - 1; i >= 0; i--) {
+            const [name, rowType] = instance.getData()[i];
+            if (rowType === type && name && !newNames.includes(name)) {
+              instance.deleteRow(i);
+            }
+          }
+
+          const updated = instance.getData();
+          let hasEmptyRow = false;
+
+          for (let i = updated.length - 1; i >= 0; i--) {
+            const length = instance.getData().length;
+            if (!updated[i][0] && length > 1) {
+              instance.deleteRow(i);
+            } else if (!updated[i][0]) {
+              hasEmptyRow = true;
+            }
+          }
+
+          if (!hasEmptyRow) {
+            instance.insertRow([...defaultRow]);
+          }
         }
       }
 
@@ -2880,179 +3118,5 @@ angular
       this.FormExternalPlugins = FormExternalPlugins;
       this.FormPythonEnv = FormPythonEnv;
       this.FormExternalCollections = FormExternalCollections;
-
-      //------------------------------------------------------------------------
-      //-- Private functions
-      //------------------------------------------------------------------------
-      function onEnterIOPortsTable(self) {
-        const grouped = {
-          IN: [],
-          OUT: [],
-          BIDI: [],
-        };
-
-        self.table.getData().forEach((row) => {
-          const enabled = row[5] !== false;
-          if (!enabled) {
-            return;
-          }
-          let name = row[0]?.trim();
-          const type = row[1]?.toUpperCase();
-          const busWidth = parseInt(row[2], 10);
-          const signed = row[3] === true;
-
-          if (!name || !type) {
-            return;
-          }
-
-          if (!isNaN(busWidth) && busWidth > 1) {
-            name += `[${busWidth - 1}:0]`;
-          }
-
-          if (signed) {
-            name = `@${name}`;
-          }
-
-          if (grouped[type]) {
-            grouped[type].push(name);
-          }
-        });
-
-        const inInput = document.querySelector('#form0');
-        const outInput = document.querySelector('#form1');
-        const bidiInput1 = document.querySelector('#form3');
-        const bidiInput2 = document.querySelector('#form4');
-
-        inInput.value = grouped.IN.join(', ');
-        outInput.value = grouped.OUT.join(', ');
-        bidiInput1.value = grouped.BIDI.join(', ');
-        bidiInput2.value = grouped.BIDI.join(', ');
-
-        const coords = self.table.selectedCell || [];
-        const row = coords[1] || 0;
-        const data = self.table.getData();
-        const rowData = self.table.getRowData(row);
-        const name = rowData[0];
-        const totalRows = data.length;
-
-        const isEmpty = !name;
-        const defaultRow = ['', 'IN', 1, false, false, true];
-
-        if (isEmpty) {
-          const otherEmptyRowExists = data.some((r, i) => !r[0] && i !== row);
-
-          if (otherEmptyRowExists || totalRows > 1) {
-            self.table.deleteRow(row);
-
-            const stillHasEmptyRow = self.table.getData().some((r) => !r[0]);
-            if (!stillHasEmptyRow) {
-              self.table.insertRow([...defaultRow]);
-            }
-          }
-        } else {
-          const hasEmptyRow = data.some((r) => !r[0]);
-          if (!hasEmptyRow) {
-            self.table.insertRow([...defaultRow]);
-          }
-        }
-      }
-
-      function updateIOPortsTable(instance, textList, type) {
-        const parsedNames = textList
-          .split(',')
-          .map((n) => {
-            let trimmed = n.trim();
-            let signed = false;
-
-            if (trimmed.startsWith('@')) {
-              signed = true;
-              trimmed = trimmed.slice(1);
-            }
-
-            const match = trimmed.match(/^(\w+)\[(\d+):(\d+)\]$/);
-            if (match) {
-              const name = match[1];
-              const msb = parseInt(match[2], 10);
-              const lsb = parseInt(match[3], 10);
-              const busWidth = Math.abs(msb - lsb) + 1;
-              return { name, busWidth, signed };
-            }
-            return { name: trimmed, busWidth: 1, signed };
-          })
-          .filter(({ name }) => name !== '');
-
-        const defaultRow = ['', 'IN', 1, false, false, true];
-        const data = instance.getData();
-
-        const nameToRowIndex = new Map();
-        const usedIndexes = new Set();
-
-        data.forEach((row, index) => {
-          const name = row[0];
-          if (name) {
-            nameToRowIndex.set(name, index);
-          }
-        });
-
-        const newNames = parsedNames.map((p) => p.name);
-        parsedNames.forEach(({ name, busWidth, signed }) => {
-          if (nameToRowIndex.has(name)) {
-            const i = nameToRowIndex.get(name);
-            const row = instance.getData()[i];
-            if (row[1] !== type) {
-              instance.setValueFromCoords(1, i, type);
-            }
-            if (row[2] !== busWidth) {
-              instance.setValueFromCoords(2, i, busWidth);
-            }
-            instance.setValueFromCoords(3, i, signed);
-            usedIndexes.add(i);
-          } else {
-            let reused = false;
-            for (let i = 0; i < data.length; i++) {
-              const [existingName, existingType] = data[i];
-              if (
-                existingType === type &&
-                !newNames.includes(existingName) &&
-                !usedIndexes.has(i) &&
-                existingName
-              ) {
-                instance.setValueFromCoords(0, i, name);
-                instance.setValueFromCoords(2, i, busWidth);
-                instance.setValueFromCoords(3, i, signed);
-                usedIndexes.add(i);
-                reused = true;
-                break;
-              }
-            }
-            if (!reused) {
-              instance.insertRow([name, type, busWidth, signed, false, true]);
-            }
-          }
-        });
-
-        for (let i = instance.getData().length - 1; i >= 0; i--) {
-          const [name, rowType] = instance.getData()[i];
-          if (rowType === type && name && !newNames.includes(name)) {
-            instance.deleteRow(i);
-          }
-        }
-
-        const updated = instance.getData();
-        let hasEmptyRow = false;
-
-        for (let i = updated.length - 1; i >= 0; i--) {
-          const length = instance.getData().length;
-          if (!updated[i][0] && length > 1) {
-            instance.deleteRow(i);
-          } else if (!updated[i][0]) {
-            hasEmptyRow = true;
-          }
-        }
-
-        if (!hasEmptyRow) {
-          instance.insertRow([...defaultRow]);
-        }
-      }
     }
   );
