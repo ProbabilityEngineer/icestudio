@@ -3,6 +3,7 @@
 Type: WIP
 
 App Changes:
+  - Backward to nwjs 0.101.2 wip nwjs version
   - Configure nwjs without sdk version to build the wip bundle
   - Force rebuild wip
   - Advances in the new io/params form by @lcapacho
