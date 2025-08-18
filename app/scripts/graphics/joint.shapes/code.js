@@ -1,6 +1,6 @@
 // jshint ignore:start
 
-/* --global sha1, WIRE_WIDTH, aceFontSize */
+/* --global sha1, WIRE_WIDTH, aceFontSize ,state */
 
 'use strict';
 
@@ -204,7 +204,7 @@ joint.shapes.ice.CodeView = joint.shapes.ice.ModelView.extend({
     this.editor.session.setAnnotations(annotations);
 
     var self = this;
-    var state = this.model.get('state');
+    //var state = this.model.get('state');
     var annotationSize = Math.round(15 * state.zoom) + 'px';
     setTimeout(function () {
       self.$box
@@ -233,7 +233,7 @@ joint.shapes.ice.CodeView = joint.shapes.ice.ModelView.extend({
     var pendingTasks = [];
     var bbox = this.model.getBBox();
     var data = this.model.get('data');
-    var state = this.model.get('state');
+    //var state = this.model.get('state');
     var rules = this.model.get('rules');
     var leftPorts = this.model.get('leftPorts');
     var rightPorts = this.model.get('rightPorts');
