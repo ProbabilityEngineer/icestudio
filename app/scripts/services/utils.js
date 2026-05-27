@@ -442,32 +442,21 @@ angular
         );
 
         if (
-          iceStudio.toolchain.apio >= '0.9.6' ||
+          iceStudio.toolchain.apio >= '1.0.0' ||
           common.APIO_VERSION === common.APIO_VERSION_DEV
         ) {
-          let args = 'install';
-          let edge = 'packages';
-          /* switch(pkg){
-              case 'drivers':
-                edge='drivers';
-                args='--install-ftdi';
-                pkg='';
-                break;
-              default:
+          removeMacOSMetadataFiles(common.APIO_HOME_DIR);
+          let command = [common.APIO_CMD, 'packages', 'install'];
 
-              }*/
-          iceConsole.log(
-            'OSS-CAD-SUITE? ' +
-              common.APIO_CMD +
-              ' ' +
-              edge +
-              ' ' +
-              args +
-              ' ' +
-              pkg
-          );
+          if (pkg === 'drivers') {
+            command = [common.APIO_CMD, 'drivers', 'install', 'ftdi'];
+          }
+
+          iceConsole.log('APIO COMMAND: ' + command.join(' '));
+          this.executeCommand(command, null, true, callback);
+        } else if (iceStudio.toolchain.apio >= '0.9.6') {
           this.executeCommand(
-            [common.APIO_CMD, edge, args, pkg],
+            [common.APIO_CMD, 'packages', 'install', pkg],
             null,
             true,
             callback
@@ -483,6 +472,20 @@ angular
           );
         }
       };
+
+      function removeMacOSMetadataFiles(dir) {
+        if (!common.DARWIN || !nodeFs.existsSync(dir)) {
+          return;
+        }
+        nodeFs.readdirSync(dir).forEach(function (file) {
+          var filePath = nodePath.join(dir, file);
+          if (file === '.DS_Store') {
+            nodeFs.unlinkSync(filePath);
+          } else if (nodeFs.lstatSync(filePath).isDirectory()) {
+            removeMacOSMetadataFiles(filePath);
+          }
+        });
+      }
 
       //-- The toolchains are NOT disabled by default
       this.toolchainDisabled = false;
