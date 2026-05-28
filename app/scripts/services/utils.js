@@ -175,6 +175,14 @@ angular
         document.addEventListener('keypress', disableEvent, true);
       };
 
+      this.getApioEnvironment = function () {
+        let env = Object.assign({}, process.env);
+        env.APIO_HOME = common.APIO_HOME_DIR;
+        env.APIO_HOME_DIR = common.APIO_HOME_DIR;
+        env.PATH = common.ENV_BIN_DIR + nodePath.delimiter + (env.PATH || '');
+        return env;
+      };
+
       //--------------------------------------------------------------
       //-- Execute the given system command
       //-- INPUTS:
@@ -208,6 +216,7 @@ angular
         //-- Execute the command in background!!
         let proccess = nodeChildProcess.spawn(command[0], args, {
           shell: true,
+          env: this.getApioEnvironment(),
         });
 
         //-- String with the latest output to pass to the callback function
@@ -254,7 +263,7 @@ angular
               callback(true, output);
             }
             if (typeof callbackAsync !== 'undefined') {
-              callbackAsync();
+              callbackAsync(true);
             }
           } else {
             //-- Command finished with NO errors. Call the callback function
@@ -442,32 +451,42 @@ angular
         );
 
         if (
-          iceStudio.toolchain.apio >= '0.9.6' ||
+          isApioVersionAtLeast(iceStudio.toolchain.apio, 1, 0) ||
+          isApioVersionAtLeast(_package.apio.min, 1, 0) ||
           common.APIO_VERSION === common.APIO_VERSION_DEV
         ) {
-          let args = 'install';
-          let edge = 'packages';
-          /* switch(pkg){
-              case 'drivers':
-                edge='drivers';
-                args='--install-ftdi';
-                pkg='';
-                break;
-              default:
+          removeMacOSMetadataFiles(common.APIO_HOME_DIR);
+          let command = [common.APIO_CMD, 'packages', 'install'];
 
-              }*/
-          iceConsole.log(
-            'OSS-CAD-SUITE? ' +
-              common.APIO_CMD +
-              ' ' +
-              edge +
-              ' ' +
-              args +
-              ' ' +
-              pkg
-          );
+          if (common.DARWIN && pkg !== 'drivers') {
+            var cleanCommand =
+              'find ' + coverPath(common.APIO_HOME_DIR) +
+              " -name .DS_Store -delete 2>/dev/null || true";
+            command = [
+              cleanCommand +
+                '; ' +
+                common.APIO_CMD +
+                ' packages install; install_status=$?; ' +
+                cleanCommand +
+                '; package_status=$(' +
+                common.APIO_CMD +
+                ' packages list 2>&1); list_status=$?; echo "$package_status"; ' +
+                cleanCommand +
+                '; if echo "$package_status" | grep -q "All Apio packages are installed OK."; then exit 0; fi; ' +
+                'if [ $install_status -ne 0 ]; then exit $install_status; fi; ' +
+                'exit $list_status',
+            ];
+          }
+
+          if (pkg === 'drivers') {
+            command = [common.APIO_CMD, 'drivers', 'install', 'ftdi'];
+          }
+
+          iceConsole.log('APIO COMMAND: ' + command.join(' '));
+          this.executeCommand(command, null, true, callback);
+        } else if (iceStudio.toolchain.apio >= '0.9.6') {
           this.executeCommand(
-            [common.APIO_CMD, edge, args, pkg],
+            [common.APIO_CMD, 'packages', 'install', pkg],
             null,
             true,
             callback
@@ -483,6 +502,19 @@ angular
           );
         }
       };
+
+      function isApioVersionAtLeast(version, major, minor) {
+        var match = /^([0-9]+)\.([0-9]+)/.exec(version || '');
+        if (!match) {
+          return false;
+        }
+        var versionMajor = parseInt(match[1]);
+        var versionMinor = parseInt(match[2]);
+        return (
+          versionMajor > major ||
+          (versionMajor === major && versionMinor >= minor)
+        );
+      }
 
       //-- The toolchains are NOT disabled by default
       this.toolchainDisabled = false;

@@ -523,8 +523,13 @@ angular
               //-- Convert the object received to a string
               let msg = '' + output;
 
-              //-- Get the version number
-              toolchain.apio = msg.match(/apio,\sversion\s(.+)/)[1];
+              //-- Get the version number. Apio 0.x prints
+              //-- "apio, version 0.9.5" while Apio 1.x prints
+              //-- "Apio CLI version 1.4.2 (...)".
+              let versionMatch =
+                msg.match(/apio,\sversion\s([^\s]+)/i) ||
+                msg.match(/Apio CLI version\s([^\s]+)/i);
+              toolchain.apio = versionMatch ? versionMatch[1] : '';
 
               iceStudio.toolchain.apio = toolchain.apio;
               //-- Check if the apio version is ok with the specification
@@ -682,6 +687,7 @@ angular
               command,
               {
                 maxBuffer: 5000 * 1024,
+                env: utils.getApioEnvironment(),
               }, // To avoid buffer overflow
               function (error, stdout, stderr) {
                 if (commands[0] === 'upload') {

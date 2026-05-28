@@ -189,6 +189,9 @@ angular.module('icestudio').service(
 
       //-- APIO_HOME_DIR env variable
       this.APIO_CMD =
+        'set APIO_HOME="' +
+        this.APIO_HOME_DIR +
+        '"& ' +
         'set APIO_HOME_DIR="' +
         this.APIO_HOME_DIR +
         '"& ' +
@@ -211,6 +214,9 @@ angular.module('icestudio').service(
 
       this.APIO_CMD =
         //-- APIO_HOME_DIR env variable
+        'APIO_HOME="' +
+        this.APIO_HOME_DIR +
+        '" ' +
         'APIO_HOME_DIR="' +
         this.APIO_HOME_DIR +
         '" ' +
