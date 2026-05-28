@@ -64,6 +64,15 @@ angular
             possibleExecutables.push('python');
           }
 
+          if (!common.WIN32) {
+            possibleExecutables.unshift('/usr/local/bin/python3.11');
+            possibleExecutables.unshift('/usr/local/bin/python3.12');
+            possibleExecutables.unshift('/usr/local/bin/python3.13');
+            possibleExecutables.unshift('/opt/homebrew/bin/python3.11');
+            possibleExecutables.unshift('/opt/homebrew/bin/python3.12');
+            possibleExecutables.unshift('/opt/homebrew/bin/python3.13');
+          }
+
           //-- Move through all the possible executables
           //-- checking if they are executable
           for (let executable of possibleExecutables) {
@@ -104,7 +113,7 @@ angular
             return (
               pythonVersion !== null &&
               pythonVersion.length === 3 &&
-              parseInt(pythonVersion[1]) >= 7
+              parseInt(pythonVersion[1]) >= 11
             );
           }
         } catch (e) {}
