@@ -353,11 +353,9 @@ angular
       this.repairPermissions = function (callback) {
         if (iceStudio.env.DARWIN === true) {
           this.executeCommand(
-            [
-              'osascript -e \'do shell script "cd ~/.icestudio;sudo find . -exec xattr -d com.apple.quarantine {} \\\\;" with administrator privileges\'',
-            ],
+            ['xattr -dr com.apple.quarantine ~/.icestudio 2>/dev/null || true'],
             null,
-            true,
+            false,
             callback
           );
         } else {
@@ -514,6 +512,20 @@ angular
           versionMajor > major ||
           (versionMajor === major && versionMinor >= minor)
         );
+      }
+
+      function removeMacOSMetadataFiles(dir) {
+        if (!common.DARWIN || !nodeFs.existsSync(dir)) {
+          return;
+        }
+        nodeFs.readdirSync(dir).forEach(function (file) {
+          var filePath = nodePath.join(dir, file);
+          if (file === '.DS_Store') {
+            nodeFs.unlinkSync(filePath);
+          } else if (nodeFs.lstatSync(filePath).isDirectory()) {
+            removeMacOSMetadataFiles(filePath);
+          }
+        });
       }
 
       //-- The toolchains are NOT disabled by default

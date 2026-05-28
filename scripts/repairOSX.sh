@@ -10,6 +10,11 @@ GREEN="\033[1;32m"
 APPDIR="dist/icestudio/osx64"
 if [ -d $APPDIR ]; then
     echo "${BLUE}Repairing OSX bundle${NC}"
+
+    # Remove local/generated files that should not be packaged.
+    find "${APPDIR}" -name .DS_Store -type f -delete
+    find "${APPDIR}" -type d -name ice-build -prune -exec rm -rf {} +
+
     find "${APPDIR}" -type f -exec file {} \; | grep -E 'Mach-O|dylib' |  cut -d: -f1 |  xargs -I {} chmod +x "{}"
 
     if [ -n "${CODESIGN_ID}" ]; then

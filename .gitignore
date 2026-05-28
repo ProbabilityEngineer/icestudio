@@ -1,4 +1,5 @@
 *.DS_Store
+.DS_Store
 *.sconsign.dblite
 *.out
 *.ini
@@ -22,6 +23,7 @@ node_modules
 app/resources/collection
 app/resources/locale/**/*.json
 ice-build/
+app/resources/**/ice-build/
 # Temp files for translation process
 statistics.txt
 readme_table.txt
